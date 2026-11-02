@@ -1,0 +1,39 @@
+{
+  "id": "youtube.nextgen",
+  "version": "1.0.0",
+  "vendor": "YouTube Next-Gen",
+  "type": "web",
+  "main": "index.html",
+  "bgImage": "preview.png",
+  "title": "YouTube Next-Gen",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "iconColor": "#000000",
+  "splashBackground": "splash.png",
+  "support360Content": true,
+  "checkUpdateOnLaunch": false,
+  "accessibility": {
+    "supportsAudioGuidance": true
+  },
+  "volumeRatioOnTTS": 50,
+  "vendorExtension": {
+    "userAgent": "$browserName$/$browserVersion$ ($platformName$-$platformVersion$), _TV_$chipSetName$/$firmwareVersion$ (LG, $modelName$, $networkMode$)",
+    "allowCrossDomain": true,
+    "reloadAtLanguageChanged": true,
+    "backgroundColor": "0xFF000000",
+    "enableMouse": true,
+    "mouseMoveForMouseOff": false,
+    "enableKeyboard": false
+  },
+  "deeplinkingParams": "{\"contentTarget\":\"https://www.youtube.com/tv?v=$CONTENTID\"}",
+  "inAppSearchParams": "{\"target\":\"q=$SEARCH_KEYWORD\"}",
+  "inAppVoiceIntent": "{\"target\":{\"intent\":\"$INTENT\",\"intentParam\":\"$INTENT_PARAM\",\"languageCode\":\"$LANG_CODE\"}}",
+  "supportQueryRouting": "{\"amazonAlexa\":true,\"googleAssistant\":true}",
+  "enablePigScreenSaver": false,
+  "trustLevel": "netcast",
+  "privilegedJail": true,
+  "supportQuickStart": true,
+  "dialAppName": "YouTube",
+  "disableBackHistoryAPI": true,
+  "supportGIP": true
+}

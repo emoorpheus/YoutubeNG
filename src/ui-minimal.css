@@ -1,0 +1,303 @@
+/* ==========================================================================
+   Minimal flat skin for the NG custom UI (settings panel, notifications,
+   SponsorBlock popup, clock).
+
+   Loaded after ui.css and overrides both built-in themes (blue-force-field and
+   classic-red) and the OLED variant. No glows, shadows, grids or gradients;
+   neutral greys; focus follows YouTube TV's own convention (white pill, black
+   text) so it reads the same as the rest of the app from the sofa.
+   !important is deliberate: the panel sets several sizes as inline styles.
+   ========================================================================== */
+
+/* --- Panel shell ---------------------------------------------------------- */
+.ytng-ui-container,
+.ytng-ui-container.theme-classic-red,
+.ytng-ui-container.oled-care {
+  max-width: 46vw !important;
+  max-height: 90vh !important;
+  background: #000 !important;
+  border: 1px solid #262626 !important;
+  border-radius: 1.2vh !important;
+  box-shadow: none !important;
+  color: #f1f1f1 !important;
+  font-family: Roboto, Arial, sans-serif !important;
+}
+
+.ytng-ui-container h1,
+.ytng-ui-container.theme-classic-red h1 {
+  justify-content: flex-start !important;
+  padding: 2.4vh 3vh 1.4vh !important;
+  border: 0 !important;
+  color: #f1f1f1 !important;
+  font-size: 2.6vh !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+.ytng-ui-container h1 .ytng-version {
+  margin-left: 1vh;
+  color: #aaa;
+  font-size: 2vh;
+  font-weight: 400;
+}
+
+/* --- Tabs ------------------------------------------------------------------ */
+.ytng-tab-menu,
+.ytng-ui-container.theme-classic-red .ytng-tab-menu {
+  justify-content: flex-start !important;
+  margin: 0 0 0.6vh !important;
+  padding: 0 2.2vh 1.2vh !important;
+  background: none !important;
+  border-bottom: 1px solid #262626 !important;
+}
+
+.ytng-tab-btn,
+.ytng-ui-container.theme-classic-red .ytng-tab-btn {
+  flex: none !important;
+  margin: 0 0.4vh !important;
+  padding: 0.8vh 1.8vh !important;
+  border-radius: 999px !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #aaa !important;
+  font-size: 2vh !important;
+  font-weight: 500 !important;
+  transition: none !important;
+}
+
+.ytng-tab-btn.active,
+.ytng-ui-container.theme-classic-red .ytng-tab-btn.active {
+  background: #272727 !important;
+  color: #f1f1f1 !important;
+}
+
+.ytng-tab-btn:focus,
+.ytng-ui-container.theme-classic-red .ytng-tab-btn:focus {
+  background: #f1f1f1 !important;
+  color: #0f0f0f !important;
+  box-shadow: none !important;
+}
+
+/* --- Pages, sections ----------------------------------------------------- */
+.ytng-ui-container > div.ytng-settings-page {
+  padding: 0 2.2vh 2vh !important;
+}
+
+.ytng-settings-section,
+#ytng-page-main .ytng-settings-section {
+  margin: 0 !important;
+  padding: 1.2vh 0 0.6vh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Hairline only between sections; the tab bar already draws the top one. */
+.ytng-settings-section + .ytng-settings-section,
+#ytng-page-main .ytng-settings-section + .ytng-settings-section {
+  border-top: 1px solid #1f1f1f !important;
+}
+
+.ytng-settings-section > .section-title,
+#ytng-page-main .ytng-settings-section > .section-title,
+.ytng-ui-container.theme-classic-red .ytng-settings-section > .section-title {
+  margin: 0 0 0.6vh !important;
+  padding: 0 0.8vh !important;
+  color: #888 !important;
+  font-size: 1.5vh !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+/* SponsorBlock category list: a plain list, no accent bar. */
+.ytng-ui-container blockquote,
+.ytng-ui-container.theme-classic-red blockquote {
+  margin: 0.8vh 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+}
+
+/* --- Rows ------------------------------------------------------------------ */
+.ytng-ui-container label,
+.ytng-ui-container .shortcut-control-row,
+.ytng-settings-section label,
+.ytng-settings-section .shortcut-control-row,
+#ytng-page-main label {
+  min-height: 0 !important;
+  margin: 0 0 0.2vh !important;
+  padding: 0.55vh 0.8vh !important;
+  border-radius: 0.8vh !important;
+  box-shadow: none !important;
+  color: #f1f1f1 !important;
+  line-height: 1.2 !important;
+}
+
+.ytng-ui-container label .label-content,
+.ytng-ui-container .shortcut-label,
+.ytng-ui-container blockquote label {
+  color: #e6e6e6 !important;
+  font-size: 2.05vh !important;
+  font-weight: 400 !important;
+}
+
+.ytng-ui-container .shortcut-control-row:focus,
+.ytng-ui-container label:focus-within,
+.ytng-ui-container.theme-classic-red .shortcut-control-row:focus,
+.ytng-ui-container.theme-classic-red label:focus-within {
+  background: #f1f1f1 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.ytng-ui-container .shortcut-control-row:focus *,
+.ytng-ui-container label:focus-within * {
+  color: #0f0f0f !important;
+}
+
+/* --- Checkbox ------------------------------------------------------------- */
+.ytng-ui-container input[type='checkbox'],
+.ytng-ui-container.theme-classic-red input[type='checkbox'],
+.ytng-ui-container.oled-care input[type='checkbox'] {
+  width: 2vh !important;
+  height: 2vh !important;
+  margin: 0 1.2vh 0 0 !important;
+  background: transparent !important;
+  border: 0.2vh solid #888 !important;
+  border-radius: 0.4vh !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.ytng-ui-container input[type='checkbox']:checked,
+.ytng-ui-container.theme-classic-red input[type='checkbox']:checked,
+.ytng-ui-container.oled-care input[type='checkbox']:checked {
+  background: #f1f1f1 !important;
+  border-color: #f1f1f1 !important;
+}
+
+.ytng-ui-container input[type='checkbox']:checked::after {
+  color: #0f0f0f !important;
+  font-size: 1.5vh !important;
+}
+
+/* Inverted inside a focused (white) row. */
+.ytng-ui-container label:focus-within input[type='checkbox'] {
+  border-color: #0f0f0f !important;
+}
+
+.ytng-ui-container label:focus-within input[type='checkbox']:checked {
+  background: #0f0f0f !important;
+}
+
+.ytng-ui-container label:focus-within input[type='checkbox']:checked::after {
+  color: #f1f1f1 !important;
+}
+
+/* --- Cycle controls (< value >) ----------------------------------------- */
+.ytng-ui-container .shortcut-value-container .arrow-btn,
+.ytng-ui-container.theme-classic-red .shortcut-value-container .arrow-btn {
+  color: #666 !important;
+  font-size: 2vh !important;
+  font-weight: 400 !important;
+}
+
+.ytng-ui-container .shortcut-value-container .current-value {
+  min-width: 18vh !important;
+  color: #f1f1f1 !important;
+  font-size: 2.05vh !important;
+  font-weight: 500 !important;
+}
+
+/* Same specificity as the rule above, so the focused (light) row needs its own
+   rule or the value is drawn white on white. */
+.ytng-ui-container .shortcut-control-row:focus .shortcut-value-container .current-value {
+  color: #0f0f0f !important;
+}
+
+/* SponsorBlock colour swatches: small flat squares; the "R" reset button is
+   pointer-only clutter (not reachable from the remote) - hidden. */
+.ytng-ui-container .reset-color-btn { display: none !important; }
+
+.ytng-ui-container input[type='color'],
+.ytng-ui-container.theme-classic-red input[type='color'] {
+  width: 2vh !important;
+  height: 2vh !important;
+  padding: 0 !important;
+  border: 1px solid #333 !important;
+  border-radius: 0.4vh !important;
+}
+
+.ytng-ui-container input[type='color']::-webkit-color-swatch-wrapper { padding: 0 !important; }
+.ytng-ui-container input[type='color']::-webkit-color-swatch { border: 0 !important; border-radius: 0.3vh !important; }
+
+/* --- Hints, footer, scrollbar -------------------------------------------- */
+.ytng-ui-container .ytng-settings-page div[style*='font-size: 18px'] {
+  padding: 0 0.8vh 1vh !important;
+  color: #888 !important;
+  font-size: 1.6vh !important;
+  line-height: 1.3 !important;
+}
+
+.ytng-ui-container small,
+.ytng-ui-container.theme-classic-red small {
+  margin-top: 1.4vh !important;
+  padding-top: 0 !important;
+  border: 0 !important;
+  color: #666 !important;
+  font-size: 1.4vh !important;
+}
+
+.ytng-ui-container > div::-webkit-scrollbar { width: 0.4vh !important; }
+.ytng-ui-container > div::-webkit-scrollbar-track { background: transparent !important; }
+.ytng-ui-container > div::-webkit-scrollbar-thumb,
+.ytng-ui-container.theme-classic-red > div::-webkit-scrollbar-thumb {
+  background: #3a3a3a !important;
+  border-radius: 0.2vh !important;
+}
+
+/* --- Notifications --------------------------------------------------------- */
+.ytng-notification-container .message,
+.ytng-notification-container.theme-classic-red .message,
+.ytng-notification-container.oled-care .message,
+.ytng-notification-container.oled-care.theme-classic-red .message {
+  padding: 1.3vh 1.8vh !important;
+  background: #000 !important;
+  border: 1px solid #333 !important;
+  border-radius: 0.8vh !important;
+  box-shadow: none !important;
+  color: #f1f1f1 !important;
+  font-family: Roboto, Arial, sans-serif !important;
+  font-size: 1.75vh !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  transition: opacity 0.2s ease !important;
+  transform: none !important;
+}
+
+/* --- SponsorBlock popup --------------------------------------------------- */
+.sb-segments-popup {
+  background: #000 !important;
+  border: 1px solid #333 !important;
+  border-radius: 1.2vh !important;
+  box-shadow: none !important;
+  font-family: Roboto, Arial, sans-serif !important;
+}
+
+.sb-popup-header { border-bottom: 1px solid #262626 !important; }
+.sb-header-icon { width: 1.25vw !important; height: 1.25vw !important; }
+.sb-header-text { font-size: 1.5vw !important; font-weight: 500 !important; }
+.sb-header-subtitle { font-size: 1.05vw !important; color: #888 !important; }
+.sb-segment-category { font-size: 1.15vw !important; font-weight: 400 !important; }
+.sb-segment-time { font-size: 1.15vw !important; font-weight: 400 !important; }
+.sb-segment-row { transition: none !important; }
+
+/* --- Clock ------------------------------------------------------------------ */
+.webOs-watch {
+  background: none !important;
+  color: rgba(241, 241, 241, 0.8) !important;
+  font-family: Roboto, Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}

@@ -1,0 +1,28 @@
+/* True Black OLED preset, static part. The palette sweep in
+   oled-true-black.js handles YouTube's own surface colours; these rules cover
+   what a sweep cannot see. Everything is gated on html.oled-theme-active. */
+
+/* Page roots (#container is already handled in ui.js). Ancestors of the
+   video, so a background here can never cover it. */
+html.oled-theme-active,
+html.oled-theme-active body {
+  background-color: #000 !important;
+}
+
+/* Full-screen pages with a gradient photo as backdrop (no video behind them). */
+html.oled-theme-active ytlr-account-selector {
+  background-color: #000 !important;
+  background-image: none !important;
+}
+
+/* Home-feed nudge banner (sign-in / promo prompts): its purple-blue gradient
+   is the one large coloured surface left on the home screen. */
+html.oled-theme-active ytlr-feed-nudge-renderer > div {
+  background-image: none !important;
+}
+
+/* Toasts lose their edge once they are black on black: a hairline brings it
+   back without changing their size. */
+html.oled-theme-active yt-overlay-toast-renderer {
+  box-shadow: inset 0 0 0 1px #2a2a2a !important;
+}

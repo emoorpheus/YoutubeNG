@@ -1,0 +1,86 @@
+# YouTube Next-Gen для LG webOS
+
+[English version](README.md)
+
+Отдельное приложение YouTube для телевизоров LG на webOS: без рекламы, со SponsorBlock, Return YouTube Dislike, управлением скоростью, режимом «настоящий чёрный» для OLED и настройками на русском или английском.
+
+- ID приложения `youtube.nextgen`. Ставится рядом с официальным YouTube и ничего не заменяет.
+- Настройки: в YouTube откройте меню слева → **«Настройки»** → **«YouTube Next-Gen»** (первый пункт) → **«Открыть настройки»**. Если на пульте есть цветные кнопки, **зелёная** открывает их сразу. Закрыть — кнопка **«Назад»**.
+
+## Возможности
+
+- Блокировка рекламы; по желанию — телеметрии.
+- SponsorBlock: пропуск спонсорских вставок и других сегментов.
+- Return YouTube Dislike.
+- Скорость воспроизведения с пульта и из меню «Скорость» самого YouTube (webOS 23+); выше 1,25× видео держится в 1080p.
+- Режим OLED: чистый чёрный (#000) вместо серых подложек.
+- Минималистичная панель настроек; настройки, уведомления и окно SponsorBlock на русском или английском.
+- Скрытие Shorts, трансляций и конечных заставок, качество превью и видео, пропуск экрана «Кто смотрит?».
+
+## Язык
+
+Русский и английский. По умолчанию приложение говорит на языке, на котором показан YouTube (**«Авто»**). Сменить: настройки → **«Основные»** → **«Интерфейс»** → **«Язык интерфейса»** (Авто / English / Русский). Панель переключается сразу; пункт «YouTube Next-Gen» в настройках самого YouTube — после перезапуска приложения.
+
+Другие языки: каждый — один файл в `src/i18n/`, его легко перевести через чат с ИИ. См. [TRANSLATING.ru.md](TRANSLATING.ru.md).
+
+## Какой файл ставить
+
+| Файл | Телевизоры |
+|---|---|
+| `youtube.nextgen_1.0.0_all_webOS22+.ipk` | webOS 22 и новее (модели с 2022 года). Меньше и быстрее. |
+| `youtube.nextgen_1.0.0_all.ipk` | любой webOS начиная с 3.x, в том числе старые модели. |
+
+## Установка
+
+Нужен телевизор в режиме разработчика или с root.
+
+Через webOS CLI:
+
+```sh
+ares-install -d tv youtube.nextgen_1.0.0_all_webOS22+.ipk
+ares-launch -d tv youtube.nextgen
+```
+
+С root по SSH:
+
+```sh
+scp youtube.nextgen_1.0.0_all_webOS22+.ipk root@TV_IP:/tmp/ng.ipk
+ssh root@TV_IP 'luna-send -i luna://com.webos.appInstallService/dev/install "{\"id\":\"youtube.nextgen\",\"ipkUrl\":\"/tmp/ng.ipk\",\"subscribe\":true}"'
+```
+
+Удаление: `ares-install -d tv -r youtube.nextgen`.
+
+## Сборка
+
+Нужен Node.js 22+.
+
+```sh
+npm ci
+npm run package:all    # -> dist/youtube.nextgen_1.0.0_all.ipk и ..._all_webOS22+.ipk
+npm run deploy -- -d tv
+npm run launch -- -d tv
+```
+
+`npm run build` / `npm run build:modern` + `npm run package` собирают один из них. ID и версия приложения — в `assets/appinfo.json`; версия синхронизируется из `package.json` командой `npm version`.
+
+## Иконка
+
+`design/icons/generate.py` рисует все варианты иконки (`design/icons/variants.png`, в лаунчере — `design/icons/launcher.png`) и для выбранного — всё, что входит в приложение: иконки, превью, заставку и картинку пункта в настройках YouTube. По умолчанию — **C** («Контур OLED»). Переключение:
+
+```sh
+python3 design/icons/generate.py I
+npm run package:all
+```
+
+## Важно знать
+
+- Отдельное приложение — отдельное хранилище: вход в аккаунт YouTube и настройки задаются заново.
+- Кнопка YouTube на пульте открывает официальное приложение. Если установлены оба, трансляция с телефона может открываться в любом из них.
+
+## Разработчикам
+
+В [AGENTS.md](AGENTS.md) (Claude Code читает его через [CLAUDE.md](CLAUDE.md)) — устройство проекта, команды и правила; в [docs/upstream.md](docs/upstream.md) — что перенесено из youtube-webos 0.8.5.
+
+## Лицензия
+
+GPL-3.0-only — см. `LICENSE` и `NOTICE`. «YouTube» — товарный знак Google LLC; проект не связан с Google и LG.

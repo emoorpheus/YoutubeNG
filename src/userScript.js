@@ -1,0 +1,69 @@
+// Dev diagnostics, aliased to an empty module unless built with `--env perf`.
+// MUST stay first: perf_mon installs "inner" probes underneath every other hook.
+import './perf_mon.js';
+
+import 'whatwg-fetch';
+import './polyfills.js';
+import './domrect-polyfill';
+// Wraps JSON.parse: has to come before adblock.js, see the file header.
+import './settings-entry.js'; // "YouTube Next-Gen" item in YouTube's Settings screen
+import './playback-speed.js';
+import './adblock.js';
+import './hooks/json-stringify';
+import './force-codec.js';
+
+import { SELECTORS } from './utils';
+import { handleLaunch, extractLaunchParams } from './launch.js';
+import { attemptActiveBypass, resetActiveBypass } from './auto-login.js';
+import { isWebOS25, simulatorMode } from './webos-utils.js';
+import { initBlockWebOSCast } from './block-webos-cast';
+import './app_api/index';
+import './ui.js'; // Registers the green-key handler, options panel, video-quality, global styles
+import './welcome.js'; // one-time first-launch card: where the settings are
+import './sponsorblock.js';
+import './emoji-font.js';
+import './screensaver-fix.js';
+import './yt-fixes.css';
+import './comments-fix.js';
+import './watch.js';
+import './lang-settings-fix';
+import './oled-true-black.js'; // True Black OLED preset (follows the OLED-Care switch)
+import './ui-minimal.css'; // flat skin for the custom UI; must stay after ui.js / sponsorblock.js
+
+import { initBufferLimit } from './hooks/buffer-limit.js';
+import { getWebOSVersion } from './webos-utils.js';
+
+if (typeof initBufferLimit === 'function' && getWebOSVersion() <= 4) {
+	initBufferLimit();
+	console.info('Initiating buffer limit');
+}
+
+(function oneTimeParamsCheck() {
+    const params = extractLaunchParams();
+    if (params && Object.keys(params).length > 0) {
+        attemptActiveBypass();
+    }
+})();
+
+document.addEventListener(
+  'webOSRelaunch',
+  (evt) => {
+    console.info('RELAUNCH:', evt, window.launchParams);
+	resetActiveBypass();
+    if (document.body && document.body.classList.contains(SELECTORS.ACCOUNT_SELECTOR)) {
+        console.info('[Main] Relaunch detected on Account Selector. Triggering bypass.');
+        attemptActiveBypass(true);
+    }
+    // Plain relaunch (returning from another app): keep whatever is playing.
+    // Navigating to #/ here leaves YouTube on the video but kills SponsorBlock.
+    const { target, contentTarget } = evt.detail ?? {};
+    if (!target && !contentTarget) return;
+    handleLaunch(evt.detail);
+  },
+  true
+);
+
+if (isWebOS25() && simulatorMode === false) {
+  console.info('[Main] Enabling webOS Google Cast Block');
+  initBlockWebOSCast();
+}

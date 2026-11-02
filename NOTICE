@@ -1,0 +1,26 @@
+YouTube Next-Gen
+Copyright (C) 2026 YouTube Next-Gen contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 3 as published by the Free
+Software Foundation (see LICENSE). It comes WITHOUT ANY WARRANTY.
+
+This is a modified version of youtube-webos, an open-source YouTube client for
+LG webOS TVs released under GPL-3.0-only; the original code is copyright its
+respective contributors. Modified in 2026: new application identity
+(youtube.nextgen), Russian interface, OLED true-black mode, minimal settings
+skin, new icons and artwork, previous branding removed. Includes fixes ported
+from youtube-webos 0.8.5 beta 2 (see docs/upstream.md).
+
+Third-party code and assets
+- src/app_api/index.ts, src/lang-settings-fix.ts and parts of
+  src/auto-login.js are adapted from TizenTube by reisxd (GPL-3.0).
+- src/spatial-navigation-polyfill.js: Copyright (c) 2018-2019 LG Electronics
+  Inc., MIT License (see the file header).
+- Emoji graphics are loaded at runtime from Twemoji (CC-BY 4.0).
+
+Online services used at runtime: SponsorBlock (sponsor.ajay.app) and
+Return YouTube Dislike (returnyoutubedislike.com).
+
+"YouTube" is a trademark of Google LLC. This project is not affiliated with,
+endorsed or sponsored by Google LLC or LG Electronics.
