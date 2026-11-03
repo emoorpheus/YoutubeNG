@@ -11,9 +11,10 @@ A separate YouTube app for LG webOS TVs: no ads, SponsorBlock, Return YouTube Di
 
 - Ad blocking; optionally less telemetry.
 - SponsorBlock: skips sponsor segments and other segment types.
-- Return YouTube Dislike.
-- Playback speed from the remote and YouTube's own Speed menu (webOS 23+); above 1.25× the video stays at 1080p.
-- OLED mode: pure black (#000) instead of grey backgrounds.
+- Return YouTube Dislike: the count is in the video's **Description**, next to the likes.
+- Playback speed from the remote and YouTube's own Speed menu (webOS 23+); when sped up the video stays at 1080p.
+- OLED mode: pure black (#000) instead of grey backgrounds, also in the player (red progress bar, near-black buttons) and on the start-up screen.
+- Screensaver on pause: a paused video goes black after 1 minute (30 s – 5 min or off), only a dim clock moves around; any key brings it back. Leaving the app pauses the video.
 - A minimal settings panel; settings, notifications and the SponsorBlock window in English or Russian.
 - Hide Shorts, live streams and end cards; thumbnail and video quality; skip the "Who's watching?" screen.
 

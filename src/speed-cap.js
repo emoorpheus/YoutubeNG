@@ -1,4 +1,4 @@
-// Whether playback speed holds the video at 1080p. Above 1.25x a TV cannot
+// Whether playback speed holds the video at 1080p. Above 1x a TV cannot
 // decode 2160p fast enough, so playback-speed.js caps the quality and Force Max
 // Quality (video-quality.js) waits meanwhile. Ported from YTAF 0.8.5 beta 2
 // (src/core/speed-cap.js, NicholasBly/youtube-webos).

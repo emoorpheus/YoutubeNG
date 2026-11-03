@@ -15,7 +15,7 @@ git fetch nb --tags
 | PR #196 | With Reduce Telemetry, home rows lost their tracking params and YouTube dropped them | `src/adblock.js` (`KEEP_TRACKING_PARAMS`), `bench/adblock-test.cjs` |
 | PR #198 | Frozen video after a video screensaver took the decoder | `src/decoder-stall.js` (from `screensaver-fix.js`), `bench/screensaver-test.cjs` |
 | speed engine | fragment sample guard, object URL cleanup, append errors, 60 s audio back-buffer, buffers freed on destroy | `src/speed/{containers,mse-hook,audio-engine}.js` (vendor files as in b2) |
-| speed cap | above 1.25x: Force Max Quality waits instead of forcing 2160p; next video capped to 1080p once it plays; after a speed reload the position is restored (webOS 25 starts ~25 s early) and the cap set again | `src/speed-cap.js`, `src/playback-speed.js`, `src/video-quality.js`, `bench/speed-cap-test.cjs` |
+| speed cap | above 1x (upstream: 1.25x): Force Max Quality waits instead of forcing 2160p; next video capped to 1080p once it plays; after a speed reload the position is restored (webOS 25 starts ~25 s early) and the cap set again | `src/speed-cap.js`, `src/playback-speed.js`, `src/video-quality.js`, `bench/speed-cap-test.cjs` |
 | version in the panel | the settings heading shows the version | `webpack.config.js` (`__YTNG_VERSION__`), `src/ui.js` |
 
 ## Not ported yet

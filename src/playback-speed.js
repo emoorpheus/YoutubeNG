@@ -160,8 +160,10 @@ export const SPEEDS = [1, 1.25, 1.5, 1.75, 2];
 export const RELOAD_DELAY_MS = 800;
 
 // Above this speed the video plays at 1080p at most: a TV cannot decode 2160p
-// fast enough (at 1.5x it dropped 85% of the frames and reached 1.43x).
-export const CAP_ABOVE = 1.25;
+// fast enough (at 1.5x it dropped 85% of the frames and reached 1.43x). At
+// 1.25x a 50/60 fps 2160p video needs 62-75 frames a second, YouTube then fell
+// back to 480p - so every speed-up is capped.
+export const CAP_ABOVE = 1;
 
 const PLAYING = 1;
 const ABOVE_1080 = ['highres', 'hd2160', 'hd1440'];

@@ -44,8 +44,9 @@ def rpoly(c, pts, r):
                    p1[0]+(b[0]-p1[0])*0.45, p1[1]+(b[1]-p1[1])*0.45, *b)
     c.close_path()
 
-def play(c, cx, cy, h, color, r=0.0, wr=0.92):
-    """Right-pointing play triangle of height h, optically centred on (cx, cy)."""
+def play(c, cx, cy, h, color, r=0.0, wr=0.92, rim=0.0, rim_color=None):
+    """Right-pointing play triangle of height h, optically centred on (cx, cy).
+    rim > 0 adds an inner rim of that width in rim_color."""
     w = h*wr; x0 = cx - w*0.42
     pts = [(x0, cy-h/2), (x0+w, cy), (x0, cy+h/2)]
     c.set_source_rgb(*color)
@@ -53,7 +54,11 @@ def play(c, cx, cy, h, color, r=0.0, wr=0.92):
         rpoly(c, pts, r*h)
     else:
         c.move_to(*pts[0]); c.line_to(*pts[1]); c.line_to(*pts[2]); c.close_path()
-    c.fill()
+    path = c.copy_path(); c.fill()
+    if rim:
+        c.save(); c.append_path(path); c.clip()
+        c.append_path(path); c.set_source_rgb(*rim_color); c.set_line_width(2*rim); c.stroke()
+        c.restore()
 
 def skip_next(c, cx, cy, h, color, r=0.08):
     """|> | glyph: play triangle + bar (the 'next' symbol)."""
@@ -104,9 +109,12 @@ def v_next(c, S):    # red tube + skip-next glyph on true black
     skip_next(c, S/2, S/2, w/ASPECT*0.50, WHITE)
 
 def v_outline(c, S): # OLED outline
+    # The red rim on the triangle is for monochrome launchers (Hearth "dark mono", see
+    # hearth_mono below): they keep what matches the tube's brightness, so a plain white
+    # triangle was cut down to a faint pixel outline, while a red rim stays a clean outline.
     bg(c, S, BLACK); w = 0.80*S; lw = 0.055*S
     c.set_source_rgb(*RED); c.set_line_width(lw); tube_path(c, S/2, S/2, w - lw); c.stroke()
-    play(c, S/2 + 0.01*S, S/2, w/ASPECT*0.42, WHITE, r=0.10)
+    play(c, S/2 + 0.01*S, S/2, w/ASPECT*0.525, WHITE, r=0.10, rim=0.035*S, rim_color=RED)
 
 def v_ffwd(c, S):
     bg(c, S, BLACK); w = 0.82*S
@@ -205,6 +213,29 @@ def relative_luminance(rgb):
     ch = [x/12.92 if x <= 0.03928 else ((x+0.055)/1.055)**2.4 for x in rgb]
     return 0.2126*ch[0] + 0.7152*ch[1] + 0.0722*ch[2]
 
+def hearth_mono(im):
+    """The icon as Hearth's "dark mono" style draws it: a port of monoPixels() in Hearth 2.0.2
+    src/lib/monoicon.ts (github.com/rudra-avatar/Hearth). Returns the white shape's alpha (L)."""
+    import numpy as np
+    from PIL import Image
+    a = np.asarray(im.convert('RGBA').resize((128, 128), Image.Resampling.BILINEAR), dtype=float)
+    ring = np.zeros(a.shape[:2], bool); ring[:2, :] = ring[-2:, :] = ring[:, :2] = ring[:, -2:] = True
+    edge = a[ring]; opaque = edge[edge[:, 3] >= 128]
+    if (edge[:, 3] < 128).mean() >= 0.5 or not len(opaque):
+        s = a[..., 3] / 255                                   # transparent icon: its own shape
+    else:
+        bgc = [np.sort(opaque[:, k])[len(opaque) >> 1] for k in range(3)]
+        d = np.sqrt(((a[..., :3] - bgc)**2).sum(axis=2)) / 441.7
+        s = np.clip((d - 0.08) / 0.32, 0, 1); s[a[..., 3] < 128] = 0
+    lum = (a[..., :3] @ [0.2126, 0.7152, 0.0722]) / 255
+    strong = s >= 0.5; body = 0.5
+    if strong.any():                                          # median brightness of the shape
+        bins = np.bincount(np.minimum(63, (lum[strong]*64).astype(int)), minlength=64)
+        body = (int(np.argmax(np.cumsum(bins) >= strong.sum()*0.5)) + 0.5) / 64
+    cut = np.clip((np.abs(lum - body) - 0.18) / 0.14, 0, 1)  # other brightness = a hole
+    s = np.where(strong, s*(1 - cut), s)
+    return Image.fromarray(np.round(s*255).astype(np.uint8), 'L')
+
 def squint_distance(a, b, n=12):
     """How different two icons look from across the room: mean RGB distance (0..100) of
     12x12 downscales. Used to check that the icon cannot be confused with stock YouTube."""
@@ -253,8 +284,9 @@ if __name__ == '__main__':
         text_centered(c, 'YouTube Next-Gen', 960, 745, 58, WHITE, font='Noto Sans JP Bold')
     pv = cairo_image(lambda c, S: preview(c, S), 1920, 1080)
     save_png(os.path.join(assets, 'preview.png'), pv, colors=32)
-    # splashBackground: plain black (the app draws its own splash), as small as a PNG gets.
-    Image.new('P', (1920, 1080), 0).save(os.path.join(assets, 'splash.png'), optimize=True)
+    # splashBackground: the same picture. src/oled-true-black.css also puts it on YouTube's
+    # start-up screen, so launch reads as one screen: TV splash, then YouTube booting.
+    save_png(os.path.join(assets, 'splash.png'), pv, colors=32)
 
     # ---- comparison sheet: each variant at 260 / 130 / 80 px
     def put(dst, im, radius, xy):
@@ -277,12 +309,12 @@ if __name__ == '__main__':
 
     # ---- launcher context: next to the stock YouTube tile, at 80 px, blurred ("squint") and grey
     tiles = [('YouTube\n(штатный)', stock_youtube)] + [(f'{k}', vf) for k, (_, vf, _) in VARIANTS.items()]
-    T, gap = 140, 30; W = len(tiles)*(T + gap) + 50; H = 640
+    T, gap = 140, 30; W = len(tiles)*(T + gap) + 50; H = 760
     mock = Image.new('RGB', (W, H)); md = ImageDraw.Draw(mock)
     for yy in range(H):  # webOS-like dark wallpaper
         t = yy/H; md.line([(0, yy), (W, yy)], fill=(int(28 - 14*t), int(32 - 16*t), int(44 - 22*t)))
     fl = ImageFont.truetype(bold, 20)
-    md.text((40, 18), 'Лаунчер LG (имитация): ряд приложений · 80 px · «прищур» (размытие) · без цвета', font=fs, fill=(170, 175, 185))
+    md.text((40, 18), 'Лаунчер LG (имитация): ряд приложений · 80 px · «прищур» (размытие) · без цвета · Hearth «тёмный моно»', font=fs, fill=(170, 175, 185))
     for i, (label, vf) in enumerate(tiles):
         x = 40 + i*(T + gap)
         big = cairo_image(vf, T)
@@ -292,6 +324,9 @@ if __name__ == '__main__':
         blur = cairo_image(vf, 80).convert('RGB').resize((20, 20), Image.Resampling.BOX).resize((80, 80), Image.Resampling.BICUBIC)
         put(mock, blur, 9, (x + (T - 80)//2, 390))
         grey = cairo_image(vf, 80).convert('L').convert('RGB'); put(mock, grey, 9, (x + (T - 80)//2, 500))
+        mono = hearth_mono(cairo_image(vf, 130)).resize((100, 100), Image.Resampling.BILINEAR)
+        tile = Image.new('RGB', (100, 100), (22, 24, 46)); tile.paste((245, 245, 255), (0, 0), mono)
+        put(mock, tile, 12, (x + (T - 100)//2, 610))
     mock.save(os.path.join(here, 'launcher.png'), optimize=True)
 
     # ---- numbers for the write-up

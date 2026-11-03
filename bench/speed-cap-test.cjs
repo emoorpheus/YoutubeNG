@@ -1,5 +1,5 @@
 /**
- * Playback speed above 1.25x: the 1080p cap before the reload, the position
+ * Playback speed above 1x: the 1080p cap before the reload, the position
  * restore after it (webOS 25 starts up to ~25 s early), the cap on the next
  * video, and no cap back at 1x. Modern build (needs AudioDecoder).
  * Usage: node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js
@@ -64,6 +64,13 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   state = 1; await wait(400);
   win.dispatchEvent(new win.CustomEvent('yt-player-state-change', { detail: { state: 1 } }));
   t('1x: next video not capped', !calls.some((x) => x[0] === 'range' && x[1] === 'hd1080'), calls);
+  // 1.25x too: a 50/60 fps 2160p video fell back to 480p there.
+  calls.length = 0; now = 70;
+  c.setSpeed(1.25, { immediate: true });
+  t('1.25x caps to 1080p before reload', JSON.stringify(calls[0]) === JSON.stringify(['range', 'hd1080', 'hd1080']), calls);
+  calls.length = 0;
+  c.setSpeed(1, { immediate: true });
+  t('1.25x -> 1x lifts the cap', calls.some((x) => x[0] === 'range' && x[1] === 'auto'), calls);
   done();
 })();
 function done() { console.log(pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0); }

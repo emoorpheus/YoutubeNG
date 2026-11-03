@@ -15,6 +15,7 @@ npx webpack --mode=production --env modern > /tmp/mod.log 2>&1
 ME=$(grep -c "^ERROR" /tmp/mod.log); [ "$ME" != "0" ] && { echo "MODERN BUILD ERRORS: $ME"; grep "^ERROR" /tmp/mod.log | head -3; }
 node bench/modern-smoke.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- playback speed 1080p cap (webOS 23+) ---"; node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- feature dependencies ---";        node bench/dependency-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1

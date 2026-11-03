@@ -23,6 +23,8 @@ import './welcome.js'; // one-time first-launch card: where the settings are
 import './sponsorblock.js';
 import './emoji-font.js';
 import './screensaver-fix.js';
+import './pause-screensaver.js'; // black screen over a paused video (OLED)
+import './background-pause.js'; // pause when the app goes to the background
 import './yt-fixes.css';
 import './comments-fix.js';
 import './watch.js';

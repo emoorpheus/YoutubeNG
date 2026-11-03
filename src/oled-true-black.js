@@ -5,7 +5,8 @@
  * turning that switch off restores YouTube's stock colours with no reload.
  *
  * Two parts:
- *  1. oled-true-black.css - static rules on stable selectors.
+ *  1. oled-true-black.css - static rules on stable selectors (start-up screen,
+ *     player progress bar, ...).
  *  2. A palette sweep over YouTube's own stylesheets (below). YouTube TV paints
  *     its surfaces (#0f0f0f page, #181818 raised, #212121 menus) from ~120
  *     rules behind obfuscated class names that change with every YouTube
@@ -15,6 +16,14 @@
  *     dropped. Rules for :hover / :focus states are left alone so focus
  *     feedback never disappears. Colour gradients are never touched: the red
  *     progress bars are drawn with them.
+ *     Controls (buttons, pills, text boxes, keyboard keys, the player's round
+ *     buttons) are grey #373737 chips; they turn near-black #1a1a1a so their
+ *     shape stays readable on #000. The colour is swapped in place, keeping
+ *     YouTube's own priority: its focus and "selected" rules - which outrank
+ *     the base rule - keep winning exactly as before, and wherever YouTube
+ *     resets a chip to transparent nothing new appears. (A ring would not
+ *     work: box-shadow lives in other rules than the fill, so it would show
+ *     on reset chips such as the guide buttons.)
  *     Only colours that were already opaque change, so nothing new can end up
  *     painted over the video plane.
  */
@@ -26,8 +35,14 @@ const SURFACE_GREYS = {
   'rgb(18, 18, 18)': true,
   'rgb(24, 24, 24)': true,
   'rgb(28, 28, 28)': true,
-  'rgb(33, 33, 33)': true
+  'rgb(33, 33, 33)': true,
+  'rgb(40, 40, 40)': true   // start-up screen, banners
 };
+const CHIP_GREYS = {
+  'rgb(55, 55, 55)': true,          // buttons, pills, text boxes, keys
+  'rgba(255, 255, 255, 0.1)': true  // the same chips on low-end UI quality
+};
+const CHIP_FILL = 'rgb(26, 26, 26)';
 const STATE_SELECTOR = /:hover|:focus|:active|zylon-focus/;
 const BACKDROP_IMAGE = /gstatic\.com\/ytlr\/img\/[^)]*gradient/i;
 
@@ -36,14 +51,25 @@ let observer = null;
 const swept = [];   // stylesheets already processed while enabled
 const patched = []; // { style, prop, value, priority } - originals, for restore
 
-function patch(style, prop, value) {
+function patch(style, prop, value, priority = 'important') {
   patched.push({
     style,
     prop,
     value: style.getPropertyValue(prop),
     priority: style.getPropertyPriority(prop)
   });
-  style.setProperty(prop, value, 'important');
+  style.setProperty(prop, value, priority);
+}
+
+// Text the rule itself paints dark (a pale chip with dark text) would vanish on black.
+function hasDarkText(style) {
+  const m = /^rgba?\((\d+), (\d+), (\d+)/.exec(style.color);
+  return !!m && (+m[1] + +m[2] + +m[3]) < 3 * 80;
+}
+
+function patchChip(style) {
+  if (hasDarkText(style)) return;
+  patch(style, 'background-color', CHIP_FILL, style.getPropertyPriority('background-color'));
 }
 
 function sweepRules(rules) {
@@ -56,6 +82,7 @@ function sweepRules(rules) {
     }
     if (!rule.selectorText || STATE_SELECTOR.test(rule.selectorText)) continue;
     if (SURFACE_GREYS[style.backgroundColor]) patch(style, 'background-color', '#000');
+    else if (CHIP_GREYS[style.backgroundColor]) patchChip(style);
     if (BACKDROP_IMAGE.test(style.backgroundImage)) patch(style, 'background-image', 'none');
   }
 }

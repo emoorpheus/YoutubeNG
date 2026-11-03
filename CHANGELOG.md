@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+Fixes from the 1.0.0 test on an LG OLED65M5 (webOS 25).
+
+- OLED mode covers the player: the progress bar is red with a lighter buffered part, the round buttons, pills, search box and keyboard keys are near-black #1a1a1a instead of grey #373737; focus still turns them white. Colours are swapped inside YouTube's own rules, so nothing depends on its class names.
+- Start-up screen: with OLED mode on, YouTube's grey loading screen is black with the YouTube Next-Gen logo and name; the webOS splash image is the same picture.
+- Screensaver on pause (Main → Interface): after 1 minute (30 s, 1, 2, 5 min or off) a paused or finished video is covered with black showing only a dim clock and the app name, moving every 20 s. Any key brings the video back without acting on it; Play / Pause resume at once. The webOS screensaver used to take about 3 minutes.
+- The video pauses when the app goes to the background (Home, another app). It used to play on unseen: autoplay moved on and a different video was showing on return.
+- Icon: the play triangle has a red rim and is 25 % bigger, so in Hearth's "dark mono" style it stays a clean outlined triangle instead of breaking into pixels. The launcher mock-up in `design/icons/` shows that style too.
+- Playback speed: 1.25× is held at 1080p as well (before: only above 1.25×) — 2160p at 50/60 fps could not keep up there and YouTube fell back to 480p.
+
 ## 1.0.0 — pre-release
 
 First version of YouTube Next-Gen, built on youtube-webos (NicholasBly 0.8.4) with playback speed from the Schmiddisen fork.

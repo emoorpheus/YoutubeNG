@@ -44,7 +44,7 @@ const STATE_BUFFERING = 3;
 // const STATE_CUED = 5;
 
 function isForceEnabled() {
-  // Playback speed above 1.25x holds the video at 1080p (speed-cap.js).
+  // Playback speed above 1x holds the video at 1080p (speed-cap.js).
   return _shouldForce && (!player?.isInline || !player.isInline()) && !isQualityCappedBySpeed();
 }
 

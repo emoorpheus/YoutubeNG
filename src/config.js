@@ -40,6 +40,18 @@ export const thumbnailQualityModes = {
   eager: 'Fast'
 };
 
+/**
+ * Black screen over a paused video (pause-screensaver.js): seconds without
+ * input before it appears. Number keys sort first, so 'off' ends the cycle.
+ */
+export const pauseScreensaverDelays = {
+  30: '30 s',
+  60: '1 min',
+  120: '2 min',
+  300: '5 min',
+  off: 'Off'
+};
+
 export const shortcutActions = {
   none: 'None',
   refresh_page: 'Refresh Page',
@@ -131,6 +143,7 @@ const configOptions = new Map([
   ['logoStyle', { default: 'default', desc: 'YouTube Logo' }],
   ['showWatch', { default: false, desc: 'Display Time in UI' }],
   ['enableOledCareMode', { default: false, desc: 'OLED-Care Mode (True Black UI)' }],
+  ['pauseScreensaver', { default: '60', desc: 'Screensaver on pause' }],
   ['videoShelfOpacity', { default: 100, desc: 'Video shelf opacity' }],
   ['fixMultilineTitles', { default: true, desc: 'Fix Multiline Titles' }],
   ['removeBlackBorders', { default: false, desc: 'New Liquid Glass UI' }],
