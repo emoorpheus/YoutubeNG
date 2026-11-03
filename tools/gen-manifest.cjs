@@ -8,7 +8,7 @@ const path = require('path');
 
 const appinfo = require('../assets/appinfo.json');
 const pkg = require('../package.json');
-const ipkfile = `${appinfo.id}_${appinfo.version}_all.ipk`;
+const ipkfile = `${appinfo.id}_${pkg.version}_all.ipk`; // named by tools/package-all.cjs
 const outfile = process.argv[2] || path.join('dist', `${appinfo.id}.manifest.json`);
 const ipkhash = crypto
   .createHash('sha256')

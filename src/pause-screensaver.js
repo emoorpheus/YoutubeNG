@@ -7,21 +7,22 @@
  * Interface) a paused or finished video is covered with black: only a dim
  * clock and the app name, which move every 20 s so no pixel stays lit.
  *
- * Any key or pointer movement brings the video back. The key press only wakes
- * the screen - it is eaten together with its repeats and release, so OK or
- * Back do not also act on the player behind - except Play / Pause, which go
- * through so one press resumes. Playback starting or the app going away
- * removes it too. The webOS screensaver still comes at its usual time.
+ * Any key or pointer movement brings the video back. The key press is eaten
+ * together with its repeats and release, so Back or the arrows do not also act
+ * on the player behind. OK, Play and Play/Pause resume a paused video in the
+ * same press (we start it, the key itself is eaten too: passed through, Play
+ * took two presses on the TV); Pause only wakes. Playback starting or the app
+ * going away removes it too. The webOS screensaver still comes at its usual time.
  */
 import './pause-screensaver.css';
 import { configRead, configAddChangeListener } from './config.js';
-import { getVideo, isWatchPage, isShortsPage, SYNTHETIC_KEY_FLAG } from './utils.js';
+import { getVideo, isWatchPage, isShortsPage, SYNTHETIC_KEY_FLAG, SELECTORS } from './utils.js';
 
 const MOVE_MS = 20000;
 const FADE_MS = 800;              // matches the transition in pause-screensaver.css
 const RELEASE_TIMEOUT_MS = 1500;  // safety net if the release never arrives
 const POINTER_SLOP = 8;           // px; the cursor reappearing is not a move
-const PASS_KEYS = [415 /* Play */, 19 /* Pause */, 463 /* Play/Pause */];
+const RESUME_KEYS = [13 /* OK */, 415 /* Play */, 463 /* Play/Pause */, 179 /* MediaPlayPause */];
 
 let overlay = null;
 let box = null;
@@ -124,6 +125,15 @@ function wake() {
   arm(); // still paused: count again
 }
 
+// Through the player, so YouTube's own state (and its UI) knows it plays.
+function resume() {
+  const video = getVideo();
+  if (!video || !video.paused || video.ended) return;
+  const player = document.getElementById(SELECTORS.PLAYER_ID);
+  if (player && typeof player.playVideo === 'function') player.playVideo();
+  else video.play();
+}
+
 function onKey(evt) {
   if (evt[SYNTHETIC_KEY_FLAG]) return; // keep-alive / auto-login keys are not the user
   const code = evt.keyCode || evt.which;
@@ -137,9 +147,10 @@ function onKey(evt) {
   if (evt.type !== 'keydown') return;
   lastInput = Date.now();
   if (!overlay) return;
+  console.info('[PauseSaver] woken by key ' + code);
   wake();
-  if (PASS_KEYS.indexOf(code) !== -1) return;
   swallow(evt);
+  if (RESUME_KEYS.indexOf(code) !== -1) resume();
   heldKey = code;
   clearTimeout(releaseTimer);
   releaseTimer = setTimeout(releaseHeld, RELEASE_TIMEOUT_MS);
@@ -177,10 +188,10 @@ function onVisibility() {
   wake();
 }
 
-['keydown', 'keypress', 'keyup'].forEach((type) => window.addEventListener(type, onKey, true));
-['mousemove', 'mousedown', 'mouseup', 'click', 'wheel'].forEach((type) => window.addEventListener(type, onPointer, true));
+['keydown', 'keypress', 'keyup'].forEach((type) => { window.addEventListener(type, onKey, true); });
+['mousemove', 'mousedown', 'mouseup', 'click', 'wheel'].forEach((type) => { window.addEventListener(type, onPointer, true); });
 // Media events do not bubble, but a capturing listener still sees them.
-['pause', 'ended', 'play', 'playing'].forEach((type) => document.addEventListener(type, onMedia, true));
+['pause', 'ended', 'play', 'playing'].forEach((type) => { document.addEventListener(type, onMedia, true); });
 document.addEventListener('visibilitychange', onVisibility);
 window.addEventListener('ytng-page-update', () => { disarm(); arm(); });
 configAddChangeListener('pauseScreensaver', () => { disarm(); arm(); });

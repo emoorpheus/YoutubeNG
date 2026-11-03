@@ -26,6 +26,7 @@ Object.defineProperty(video, 'paused', { configurable: true, get: () => paused }
 const player = doc.getElementById('ytlr-player__player-container-player');
 const playerCalls = [];
 player.pauseVideo = () => { playerCalls.push('pauseVideo'); paused = true; };
+player.playVideo = () => { playerCalls.push('playVideo'); paused = false; media('play'); };
 let hidden = false;
 Object.defineProperty(doc, 'hidden', { configurable: true, get: () => hidden });
 let threw = null;
@@ -55,9 +56,22 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('the next key goes through', seen.length === 1, seen);
   await wait(1300);
   t('still paused: black again after the delay', saver());
-  key('keydown', 415);
-  t('Play wakes and goes through', !saver() && seen[seen.length - 1] === 415, seen);
-  key('keyup', 415);
+  // Play, Play/Pause and OK resume in the same press; the key itself is eaten,
+  // so YouTube does not toggle a second time (TV test: Play took two presses).
+  for (const [name, code] of [['Play', 415], ['Play/Pause', 463], ['OK', 13]]) {
+    const before = seen.length;
+    key('keydown', code);
+    t(name + ' wakes and resumes in one press', !saver() && !paused && playerCalls[playerCalls.length - 1] === 'playVideo', playerCalls);
+    key('keyup', code);
+    t(name + ' does not reach the player', seen.length === before, seen.slice(before));
+    paused = true; media('pause');
+    await wait(1300);
+    t('paused again: black again', saver());
+  }
+  const plays = playerCalls.length;
+  key('keydown', 19);
+  t('Pause only wakes', !saver() && paused && playerCalls.length === plays, playerCalls);
+  key('keyup', 19);
   await wait(1300);
   t('black again', saver());
   // Held key: the press that wakes the screen repeats for 2 s, longer than the
@@ -78,10 +92,12 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('playback removes it', !saver());
   await wait(1300);
   t('no black screen while playing', !saver());
+  const callsBefore = playerCalls.length;
   hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
-  t('app to the background pauses through the player', playerCalls.length === 1, playerCalls);
+  const calls = playerCalls.length;
+  t('app to the background pauses through the player', calls === callsBefore + 1 && playerCalls[calls - 1] === 'pauseVideo' && paused, playerCalls);
   hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
-  t('coming back does not resume', playerCalls.length === 1 && paused, playerCalls);
+  t('coming back does not resume', playerCalls.length === calls && paused, playerCalls);
   done();
 })();
 function done() { console.log(pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0); }

@@ -321,7 +321,12 @@ export function createSpeedController({ win, getPlayer, notify, configRead }) {
 
     function onRateRequest() {}
 
-  function onError(_err) {
+  function onError(err) {
+    // The cause, for the TV console: the notification below cannot say it.
+    console.warn(
+      '[Speed] engine error' + (win.document && win.document.hidden ? ' (in background)' : '') + ':',
+      err && err.name ? err.name + ': ' + err.message : err
+    );
     if (currentSpeed !== 1) {
       const previousSpeed = currentSpeed;
       setCurrent(1);

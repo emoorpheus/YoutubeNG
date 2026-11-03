@@ -20,7 +20,7 @@ YouTube Next-Gen: a YouTube app for LG webOS TVs, a fork of [youtube-webos](http
 | `src/adblock.js`, `src/sponsorblock*.js`, `src/return-dislike.js`, `src/video-quality.js`, ... | features, one file each |
 | `src/polyfills.js`, `src/spatial-navigation-polyfill.js` | what webOS 3 (Chrome 38) lacks; legacy build only |
 | `assets/` | `appinfo.json`, icons, splash (generated, see Icons) |
-| `design/icons/generate.py` | draws icon variants A–I and all shipped images |
+| `design/icons/generate.py` | draws icon variants A–J and all shipped images |
 | `tools/` | `package-all.cjs`, `i18n.cjs`, `ares-app.js`, `sync-version.cjs` |
 | `bench/` | headless tests and benchmarks against the built bundle |
 | `docs/upstream.md` | what is ported from upstream and what is not yet |
@@ -55,7 +55,7 @@ Do not run `npm run type-check` (`tsc -b`); it is not part of the build. Do not 
 - **Line endings.** Most older files are CRLF (`src/ui.js`, `config.js`, `userScript.js`, `utils.js`, `adblock.js`, `sponsorblock.js`, `video-quality.js`, `ui.css`, `assets/appinfo.json`, `package.json`, ...); newer ones (`src/i18n/`, `src/speed/`, `playback-speed.js`, `ui-minimal.css`, `tools/`) are LF. Check with `file <path>` and keep each file's line endings; edit CRLF files byte-safe.
 - **Text on screen** goes through `t()` from `src/i18n/index.js` (or `createElement(..., { text })`, `showNotification`, a config `desc`, which call it). Never pass config keys or values through `t()`. After adding text: `npm run i18n:template`, add the Russian to `src/i18n/ru.js` (`node tools/i18n.cjs sync ru` adds it marked `// TODO`), `npm run i18n:check`. A message with a value inside needs a pattern in `template.js` (see `TRANSLATING.md`).
 - **Settings**: add a key to `configOptions` in `src/config.js` with a default and an English `desc`; the panel row goes in `src/ui.js`.
-- **Icons**: do not edit images in `assets/` by hand. `python3 design/icons/generate.py [A-I]` (default C) writes every icon, the preview, the splash and the Settings picture, then `npm run package:all`.
+- **Icons**: do not edit images in `assets/` by hand. `python3 design/icons/generate.py [A-J]` (default J) writes every icon, the preview, the splash, the start-up picture and the Settings picture, then `npm run package:all`.
 - **Version**: `package.json` is the source; `npm version <x.y.z>` syncs `assets/appinfo.json`. The panel heading shows it (`__YTNG_VERSION__`, webpack DefinePlugin). Update `CHANGELOG.md`.
 - **Upstream**: port changes by hand and record them in `docs/upstream.md`; credit the PR in the ported file.
 - **Docs**: `README.md` and `README.ru.md` (also `TRANSLATING.md` / `TRANSLATING.ru.md`) say the same thing; change both.

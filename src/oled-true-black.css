@@ -28,11 +28,13 @@ html.oled-theme-active yt-overlay-toast-renderer {
 }
 
 /* Start-up screen: YouTube shows its logo on #282828 until the app is up.
-   Same picture as the system splash (assets/splash.png), so the hand-over
-   from the TV's splash to YouTube's start-up screen is invisible. */
+   Its page paints that before this script is injected, so the logo flashes
+   for a moment whatever we do; from then on it is black with the YouTube
+   Next-Gen picture (src/icons/startup.png). The webOS splash before it is
+   plain black, so the picture is not shown twice around YouTube's logo. */
 html.oled-theme-active #loader {
   background-color: #000 !important;
-  background-image: url('../assets/splash.png') !important;
+  background-image: url('./icons/startup.png') !important;
   background-size: cover !important;
 }
 

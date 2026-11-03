@@ -1,8 +1,21 @@
 # Changelog
 
-## 1.1.0
+Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
-Fixes from the 1.0.0 test on an LG OLED65M5 (webOS 25).
+## 1.0.0 pre-release03
+
+Fixes from the pre-release02 test on an LG OLED65M5 (webOS 25).
+
+- Playback speed holds on 50 fps VP9 videos. Only appends that start an init segment are parsed now; media chunks go to the TV untouched. They are cut anywhere, and about 2 % of WebM ones read as an impossible element size, which dropped the speed to 1× with "Playback speed not available".
+- Back from Home or another app the video waits paused, at the same spot and speed. If the speed engine loses its audio decoder or AudioContext in the background, it is rebuilt on return; before, that counted as a failure: the speed went to 1× and the reload started the video playing. A decoder the browser reclaims is rebuilt the same way (three times a minute at most). The cause of any fall back to 1× is now in the TV console (`[Speed] …`).
+- Screensaver on pause: OK, Play and Play/Pause resume the video in the same press (Play took two); other keys only bring the picture back. The key that woke it is logged (`[PauseSaver] woken by key …`).
+- Start-up: the webOS splash is plain black and the YouTube Next-Gen picture is only on YouTube's own start-up screen. YouTube's page draws its logo before the app's script is in, so it still flashes for a moment, but no longer between two copies of the NG picture.
+- Icon: red button with a white triangle (variant J). In Hearth's "dark mono" style it is a solid button with the triangle cut out.
+- Tests: `bench/run-all.sh` fails when a test fails or crashes (after a fresh `npm ci` every test crashed on the missing jsdom and the run still passed); jsdom is a dev dependency; new `bench/speed-engine-test.cjs`.
+
+## 1.0.0 pre-release02
+
+Fixes from the pre-release01 test on an LG OLED65M5 (webOS 25). On the TV this build showed version 1.1.0.
 
 - OLED mode covers the player: the progress bar is red with a lighter buffered part, the round buttons, pills, search box and keyboard keys are near-black #1a1a1a instead of grey #373737; focus still turns them white. Colours are swapped inside YouTube's own rules, so nothing depends on its class names.
 - Start-up screen: with OLED mode on, YouTube's grey loading screen is black with the YouTube Next-Gen logo and name; the webOS splash image is the same picture.
@@ -11,7 +24,7 @@ Fixes from the 1.0.0 test on an LG OLED65M5 (webOS 25).
 - Icon: the play triangle has a red rim and is 25 % bigger, so in Hearth's "dark mono" style it stays a clean outlined triangle instead of breaking into pixels. The launcher mock-up in `design/icons/` shows that style too.
 - Playback speed: 1.25× is held at 1080p as well (before: only above 1.25×) — 2160p at 50/60 fps could not keep up there and YouTube fell back to 480p.
 
-## 1.0.0 — pre-release
+## 1.0.0 pre-release01
 
 First version of YouTube Next-Gen, built on youtube-webos (NicholasBly 0.8.4) with playback speed from the Schmiddisen fork.
 

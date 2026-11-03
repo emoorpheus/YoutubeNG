@@ -1,11 +1,12 @@
 """YouTube Next-Gen icons.
 
-    python3 design/icons/generate.py [VARIANT]      (default: C; needs pycairo, Pillow, Noto Sans JP)
+    python3 design/icons/generate.py [VARIANT]      (default: J; needs pycairo, Pillow, Noto Sans JP)
 
 Draws every variant into design/icons/<K>/ (icon.png 80 px, largeIcon.png 130 px, icon.svg),
 the comparison sheets design/icons/variants.png and design/icons/launcher.png, and, for the
 chosen VARIANT, everything the app ships: assets/icon.png, assets/largeIcon.png, iconColor in
-assets/appinfo.json, assets/preview.png, assets/splash.png and src/icons/settings-entry.png.
+assets/appinfo.json, assets/preview.png, assets/splash.png (plain black), src/icons/startup.png
+(YouTube's start-up screen) and src/icons/settings-entry.png.
 This file is the one place that decides what the app looks like.
 
 Tube geometry fitted to the reference: superellipse |x/A|^7 + |y/B|^3.75 = 1, aspect 635:445,
@@ -152,6 +153,11 @@ def v_shield(c, S):
 def v_tile(c, S):    # red gradient tile + big white skip-next
     grad_bg(c, S); skip_next(c, S/2, S/2, 0.46*S, WHITE, r=0.10)
 
+def v_button(c, S):  # red filled tube, white rounded triangle: reads in Hearth "dark mono" too
+    bg(c, S, BLACK); w = 0.80*S
+    c.set_source_rgb(*RED); tube_path(c, S/2, S/2, w); c.fill()
+    play(c, S/2 + 0.01*S, S/2, w/ASPECT*0.50, WHITE, r=0.10)
+
 def v_disc(c, S):
     bg(c, S, BLACK)
     c.set_source_rgb(*RED); c.arc(S/2, S/2, 0.40*S, 0, 2*math.pi); c.fill()
@@ -167,6 +173,7 @@ VARIANTS = {
     'G': ('Щит (без рекламы)', v_shield, '#000000'),
     'H': ('Красная плитка ▶|', v_tile, '#D9221F'),
     'I': ('Круг ▶|', v_disc, '#000000'),
+    'J': ('Красная кнопка ▶', v_button, '#000000'),
 }
 
 def render_png(fn, S, path):
@@ -248,7 +255,7 @@ def squint_distance(a, b, n=12):
 
 if __name__ == '__main__':
     from PIL import Image, ImageDraw, ImageFont, ImageFilter
-    choice = (sys.argv[1] if len(sys.argv) > 1 else 'C').upper()
+    choice = (sys.argv[1] if len(sys.argv) > 1 else 'J').upper()
     if choice not in VARIANTS:
         sys.exit('Usage: python3 design/icons/generate.py [' + '|'.join(VARIANTS) + ']')
     here = os.path.dirname(os.path.abspath(__file__))
@@ -284,9 +291,11 @@ if __name__ == '__main__':
         text_centered(c, 'YouTube Next-Gen', 960, 745, 58, WHITE, font='Noto Sans JP Bold')
     pv = cairo_image(lambda c, S: preview(c, S), 1920, 1080)
     save_png(os.path.join(assets, 'preview.png'), pv, colors=32)
-    # splashBackground: the same picture. src/oled-true-black.css also puts it on YouTube's
-    # start-up screen, so launch reads as one screen: TV splash, then YouTube booting.
-    save_png(os.path.join(assets, 'splash.png'), pv, colors=32)
+    # Start-up: YouTube paints its own logo on grey (#loader, inline in its page) before the
+    # app's script is in, so a picture in the webOS splash would show up twice around it.
+    # splashBackground is plain black; src/oled-true-black.css puts the picture on #loader.
+    save_png(os.path.join(root, 'src', 'icons', 'startup.png'), pv, colors=32)
+    save_png(os.path.join(assets, 'splash.png'), Image.new('RGB', (1920, 1080), BLACK), colors=2)
 
     # ---- comparison sheet: each variant at 260 / 130 / 80 px
     def put(dst, im, radius, xy):
@@ -334,4 +343,4 @@ if __name__ == '__main__':
     print('variant  squint-distance-from-stock-YouTube')
     for k, (nm, vf, _) in VARIANTS.items():
         print(f'  {k}  {squint_distance(cairo_image(vf, 80), stock):5.1f}  {nm}')
-    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, settings-entry.png written')
+    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, startup.png, settings-entry.png written')

@@ -2,17 +2,22 @@
 # Full verification + benchmark suite. Usage: bench/run-all.sh <label>
 cd "$(dirname "$0")/.."
 LABEL="${1:-run}"
+# A test that fails or crashes makes the whole run fail (exit 1), not just print.
+set -o pipefail
+FAILED=0
+trap 'FAILED=$((FAILED+1)); echo "!!! the step above FAILED"' ERR
 echo "==================== $LABEL ===================="
 npx webpack --mode=production > /tmp/leg.log 2>&1
-E=$(grep -c "^ERROR" /tmp/leg.log); [ "$E" != "0" ] && { echo "LEGACY BUILD ERRORS: $E"; grep "^ERROR" /tmp/leg.log | head -5; }
+E=$(grep -c "^ERROR" /tmp/leg.log || true); [ "$E" != "0" ] && { echo "LEGACY BUILD ERRORS: $E"; grep "^ERROR" /tmp/leg.log | head -5; }
 echo "--- polyfill conformance ---";  node bench/polyfill-conformance.cjs 2>&1 | tail -2
+echo "--- playback speed engine (src/speed) ---"; node bench/speed-engine-test.cjs 2>/dev/null | tail -1
 echo "--- launcher URL cases ---";    node bench/launch-test.cjs 2>&1 | tail -2
 echo "--- bundle smoke (webOS 3) ---"; node bench/smoke.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -2
 echo "--- adblock filters (webOS 3) ---"; node bench/adblock-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -2
 echo "--- screensaver stall nudge (webOS 3) ---"; node bench/screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- modern build smoke (webOS 23+) ---"
 npx webpack --mode=production --env modern > /tmp/mod.log 2>&1
-ME=$(grep -c "^ERROR" /tmp/mod.log); [ "$ME" != "0" ] && { echo "MODERN BUILD ERRORS: $ME"; grep "^ERROR" /tmp/mod.log | head -3; }
+ME=$(grep -c "^ERROR" /tmp/mod.log || true); [ "$ME" != "0" ] && { echo "MODERN BUILD ERRORS: $ME"; grep "^ERROR" /tmp/mod.log | head -3; }
 node bench/modern-smoke.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- playback speed 1080p cap (webOS 23+) ---"; node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
@@ -31,6 +36,9 @@ echo "--- emoji amplification ---";        node bench/emoji-amplify-test.cjs dis
 echo "--- JSON hook perf (webOS 3) ---"; node bench/hook-bench.cjs dist/webOSUserScripts/userScript.js legacy "$LABEL" 2>&1 | grep -v "^JSON:"
 echo "--- perf_mon build (--env perf) ---"
 npx webpack --mode=production --env perf > /tmp/perf.log 2>&1
-PE=$(grep -c "^ERROR" /tmp/perf.log); [ "$PE" != "0" ] && { echo "PERF BUILD ERRORS: $PE"; grep -A3 "^ERROR" /tmp/perf.log | head -8; }
+PE=$(grep -c "^ERROR" /tmp/perf.log || true); [ "$PE" != "0" ] && { echo "PERF BUILD ERRORS: $PE"; grep -A3 "^ERROR" /tmp/perf.log | head -8; }
 node bench/perfmon-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -2
 npx webpack --mode=production > /dev/null 2>&1   # leave dist as the normal build
+trap - ERR
+if [ "$FAILED" != 0 ]; then echo "==================== $FAILED step(s) FAILED ===================="; exit 1; fi
+echo "==================== all passed ===================="

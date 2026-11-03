@@ -348,7 +348,14 @@ export function installMseHook(
     const isWebm = mime.includes('webm');
 
     sb.appendBuffer = function (data) {
-      const u8 = new Uint8Array(data);
+      const u8 = ArrayBuffer.isView(data)
+        ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+        : new Uint8Array(data);
+      // An init segment always starts an append; anything else is media and
+      // goes through untouched. Parsing media chunks is not just wasted work:
+      // they are cut anywhere, and about 2 % of WebM ones read as an element
+      // size too big to be real - which dropped the speed to 1x on 50 fps VP9.
+      if (!looksLikeInitStart(u8)) return origAppendBuffer.call(this, data);
       let appended = false;
       try {
         let isInit = false;
@@ -370,13 +377,9 @@ export function installMseHook(
           appended = true;
           origAppendBuffer.call(this, modified.buffer || modified);
         } else {
-          if (looksLikeInitStart(u8)) {
-            // An init we cannot see whole cannot be rewritten: the video would
-            // play at 1x while the audio is stretched. Say so; B2 falls back to 1x.
-            throw new Error('init segment split across appends');
-          }
-          appended = true;
-          origAppendBuffer.call(this, data);
+          // An init we cannot see whole cannot be rewritten: the video would
+          // play at 1x while the audio is stretched. Say so; B2 falls back to 1x.
+          throw new Error('init segment split across appends');
         }
       } catch (e) {
         // Errors of the native append itself (e.g. QuotaExceededError, which

@@ -14,7 +14,7 @@ A separate YouTube app for LG webOS TVs: no ads, SponsorBlock, Return YouTube Di
 - Return YouTube Dislike: the count is in the video's **Description**, next to the likes.
 - Playback speed from the remote and YouTube's own Speed menu (webOS 23+); when sped up the video stays at 1080p.
 - OLED mode: pure black (#000) instead of grey backgrounds, also in the player (red progress bar, near-black buttons) and on the start-up screen.
-- Screensaver on pause: a paused video goes black after 1 minute (30 s – 5 min or off), only a dim clock moves around; any key brings it back. Leaving the app pauses the video.
+- Screensaver on pause: a paused video goes black after 1 minute (30 s – 5 min or off), only a dim clock moves around; any key brings it back, OK and Play also resume. Leaving the app pauses the video.
 - A minimal settings panel; settings, notifications and the SponsorBlock window in English or Russian.
 - Hide Shorts, live streams and end cards; thumbnail and video quality; skip the "Who's watching?" screen.
 
@@ -57,16 +57,16 @@ Node.js 22+.
 
 ```sh
 npm ci
-npm run package:all    # -> dist/youtube.nextgen_1.0.0_all.ipk and ..._all_webOS22+.ipk
+npm run package:all    # -> dist/youtube.nextgen_<version>_all.ipk and ..._all_webOS22+.ipk
 npm run deploy -- -d tv
 npm run launch -- -d tv
 ```
 
-`npm run build` / `npm run build:modern` + `npm run package` build one of them. The app ID and version live in `assets/appinfo.json`; `npm version` syncs the version from `package.json`.
+`npm run build` / `npm run build:modern` + `npm run package` build one of them. The version lives in `package.json`: test builds are `1.0.0-pre-release02` and so on, shown in the settings heading and the file names. webOS takes numbers only, so `npm version` writes just `1.0.0` to `assets/appinfo.json`, next to the app ID.
 
 ## Icon
 
-`design/icons/generate.py` draws all icon variants (`design/icons/variants.png`, in the launcher: `design/icons/launcher.png`) and, for the chosen one, everything the app ships: icons, preview, splash and the picture of the item in YouTube's Settings. Default is **C** (OLED outline). To switch:
+`design/icons/generate.py` draws all icon variants (`design/icons/variants.png`, in the launcher: `design/icons/launcher.png`) and, for the chosen one, everything the app ships: icons, preview, the start-up picture and the picture of the item in YouTube's Settings. Default is **J** (red button). To switch:
 
 ```sh
 python3 design/icons/generate.py I

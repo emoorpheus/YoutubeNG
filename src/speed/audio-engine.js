@@ -58,7 +58,18 @@ export class AudioEngine {
     this.anchorPending = false;
     this.stalledTicks = 0;
 
+    // An error while the app is in the background (webOS can take the audio
+    // decoder or the AudioContext away then) does not drop the speed: the
+    // engine is rebuilt in place when the app is back, see revive().
+    this.lost = null;
+    this.onVisibility = () => {
+      if (!this.win.document.hidden) this.revive();
+    };
+    if (this.win.document)
+      this.win.document.addEventListener('visibilitychange', this.onVisibility);
+
     this.tickInterval = this.win.setInterval(() => {
+      if (this.lost) return;
       // An error here would otherwise repeat every 50 ms with silent audio;
       // reporting it falls back to 1x.
       try {
@@ -268,6 +279,8 @@ export class AudioEngine {
   destroy() {
     this.destroyed = true;
     this.win.clearInterval(this.tickInterval);
+    if (this.win.document)
+      this.win.document.removeEventListener('visibilitychange', this.onVisibility);
     if (this.video) {
       this.video.removeEventListener('pause', this.onPause);
       this.video.removeEventListener('waiting', this.onWaiting);
@@ -285,10 +298,57 @@ export class AudioEngine {
   }
 
   reportError(e) {
-    if (this.failed) return;
+    if (this.failed || this.destroyed) return;
+    const what = e && e.name ? e.name + ': ' + e.message : String(e);
+    const hidden = !!(this.win.document && this.win.document.hidden);
+    // QuotaExceededError: the browser reclaimed an idle decoder, not bad data.
+    // Three rebuilds a minute at most, so a decoder that keeps failing still
+    // ends in the 1x fallback instead of a loop.
+    const now = Date.now();
+    this.revivedAt = (this.revivedAt || []).filter((t) => now - t < 60000);
+    if ((hidden || (e && e.name === 'QuotaExceededError')) && this.revivedAt.length < 3) {
+      if (!this.lost)
+        console.warn('[Speed] audio engine lost' + (hidden ? ' in the background' : '') + ', rebuilding:', what);
+      this.lost = e;
+      if (!hidden) this.win.setTimeout(() => this.revive(), 0);
+      return;
+    }
     this.failed = true;
     if (this.onError) {
       this.onError(e);
+    }
+  }
+
+  // Rebuilds what reportError() let go: a fresh decoder (and AudioContext if it
+  // was closed), decoding again from the current position. Playback goes on at
+  // the same speed; the next movement of the video re-anchors the audio.
+  revive() {
+    if (!this.lost || this.failed || this.destroyed) return;
+    this.lost = null;
+    this.revivedAt.push(Date.now());
+    try {
+      if (this.ctx.state === 'closed') {
+        this.ctx = new this.win.AudioContext();
+        this.gain = this.ctx.createGain();
+        this.gain.connect(this.ctx.destination);
+        this.setVolume(this.volume, this.muted);
+        this.sources.clear();
+      } else {
+        this.stopFuture();
+        if (this.ctx.state !== 'running' && this.ctx.resume)
+          this.ctx.resume().catch(() => {});
+      }
+      this.stretcher = null;
+      this.anchorPending = !!this.video && !this.video.paused;
+      this.pcm = [];
+      if (this.decoder && this.decoder.state !== 'closed') this.decoder.close();
+      this.decoder = null;
+      const cfg = this.cfg;
+      this.cfg = null;
+      // A copy: a configure() still pending for the old object then stands down.
+      if (cfg) this.configure(Object.assign({}, cfg));
+    } catch (e) {
+      this.reportError(e);
     }
   }
 

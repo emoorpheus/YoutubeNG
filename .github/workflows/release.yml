@@ -29,8 +29,9 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          name: 'Release ${{ github.ref }}'
-          prerelease: true
+          name: '${{ github.ref_name }}'
+          # v1.0.0 is a release; v1.0.0-pre-release02 and the like are pre-releases.
+          prerelease: ${{ contains(github.ref_name, '-') }}
           draft: false
           allowUpdates: true
           omitNameDuringUpdate: true
