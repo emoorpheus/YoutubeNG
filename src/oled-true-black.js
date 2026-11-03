@@ -5,8 +5,8 @@
  * turning that switch off restores YouTube's stock colours with no reload.
  *
  * Two parts:
- *  1. oled-true-black.css - static rules on stable selectors (start-up screen,
- *     player progress bar, ...).
+ *  1. oled-true-black.css - static rules on stable selectors (player progress
+ *     bar, toasts, ...).
  *  2. A palette sweep over YouTube's own stylesheets (below). YouTube TV paints
  *     its surfaces (#0f0f0f page, #181818 raised, #212121 menus) from ~120
  *     rules behind obfuscated class names that change with every YouTube
@@ -36,7 +36,7 @@ const SURFACE_GREYS = {
   'rgb(24, 24, 24)': true,
   'rgb(28, 28, 28)': true,
   'rgb(33, 33, 33)': true,
-  'rgb(40, 40, 40)': true   // start-up screen, banners
+  'rgb(40, 40, 40)': true   // banners
 };
 const CHIP_GREYS = {
   'rgb(55, 55, 55)': true,          // buttons, pills, text boxes, keys
@@ -44,6 +44,9 @@ const CHIP_GREYS = {
 };
 const CHIP_FILL = 'rgb(26, 26, 26)';
 const STATE_SELECTOR = /:hover|:focus|:active|zylon-focus/;
+// YouTube's start-up screen (#loader, grey with its logo) is painted before
+// this script runs; recolouring it would only add a second look to the launch.
+const START_SCREEN = /#loader\b/;
 const BACKDROP_IMAGE = /gstatic\.com\/ytlr\/img\/[^)]*gradient/i;
 
 let enabled = false;
@@ -80,7 +83,7 @@ function sweepRules(rules) {
       if (rule.cssRules) sweepRules(rule.cssRules); // @media / @supports
       continue;
     }
-    if (!rule.selectorText || STATE_SELECTOR.test(rule.selectorText)) continue;
+    if (!rule.selectorText || STATE_SELECTOR.test(rule.selectorText) || START_SCREEN.test(rule.selectorText)) continue;
     if (SURFACE_GREYS[style.backgroundColor]) patch(style, 'background-color', '#000');
     else if (CHIP_GREYS[style.backgroundColor]) patchChip(style);
     if (BACKDROP_IMAGE.test(style.backgroundImage)) patch(style, 'background-image', 'none');

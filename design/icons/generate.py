@@ -5,8 +5,8 @@
 Draws every variant into design/icons/<K>/ (icon.png 80 px, largeIcon.png 130 px, icon.svg),
 the comparison sheets design/icons/variants.png and design/icons/launcher.png, and, for the
 chosen VARIANT, everything the app ships: assets/icon.png, assets/largeIcon.png, iconColor in
-assets/appinfo.json, assets/preview.png, assets/splash.png (plain black), src/icons/startup.png
-(YouTube's start-up screen) and src/icons/settings-entry.png.
+assets/appinfo.json, assets/preview.png, assets/splash.png (plain black) and
+src/icons/settings-entry.png.
 This file is the one place that decides what the app looks like.
 
 Tube geometry fitted to the reference: superellipse |x/A|^7 + |y/B|^3.75 = 1, aspect 635:445,
@@ -291,10 +291,9 @@ if __name__ == '__main__':
         text_centered(c, 'YouTube Next-Gen', 960, 745, 58, WHITE, font='Noto Sans JP Bold')
     pv = cairo_image(lambda c, S: preview(c, S), 1920, 1080)
     save_png(os.path.join(assets, 'preview.png'), pv, colors=32)
-    # Start-up: YouTube paints its own logo on grey (#loader, inline in its page) before the
-    # app's script is in, so a picture in the webOS splash would show up twice around it.
-    # splashBackground is plain black; src/oled-true-black.css puts the picture on #loader.
-    save_png(os.path.join(root, 'src', 'icons', 'startup.png'), pv, colors=32)
+    # splashBackground: plain black. YouTube's page then shows its own start-up screen
+    # (#loader, grey with its logo) before the app's script is in, and the app leaves it as it
+    # is: a picture of ours before or after it would only make the launch flicker between looks.
     save_png(os.path.join(assets, 'splash.png'), Image.new('RGB', (1920, 1080), BLACK), colors=2)
 
     # ---- comparison sheet: each variant at 260 / 130 / 80 px
@@ -343,4 +342,4 @@ if __name__ == '__main__':
     print('variant  squint-distance-from-stock-YouTube')
     for k, (nm, vf, _) in VARIANTS.items():
         print(f'  {k}  {squint_distance(cairo_image(vf, 80), stock):5.1f}  {nm}')
-    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, startup.png, settings-entry.png written')
+    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, settings-entry.png written')
