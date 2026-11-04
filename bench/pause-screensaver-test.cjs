@@ -119,6 +119,26 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('playing again on return: paused at once', paused && playerCalls[playerCalls.length - 1] === 'pauseVideo', playerCalls);
   player.playVideo(); media('playing');
   t('and Play then plays', !paused, playerCalls);
+  // TV (pre-release04): webOS has already stopped the element when
+  // visibilitychange fires, YouTube's player still reports "playing" (1).
+  let ytState = 1;
+  player.getPlayerState = () => ytState;
+  time = 497.7;
+  paused = true;
+  hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
+  t('element already stopped by webOS, player playing: paused through the player', playerCalls[playerCalls.length - 1] === 'pauseVideo', playerCalls);
+  ytState = 5; time = 0;
+  const callsBg = playerCalls.length;
+  hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
+  paused = false; time = 497.4; media('play'); media('playing');
+  t('and its restart on return is paused', playerCalls.length === callsBg + 1 && playerCalls[playerCalls.length - 1] === 'pauseVideo' && paused, playerCalls);
+  // Paused by the user before Home: nothing to do on return.
+  ytState = 2; paused = true;
+  const callsPaused = playerCalls.length;
+  hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
+  hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
+  media('playing');
+  t('paused before Home: left alone', playerCalls.length === callsPaused, playerCalls);
   done();
 })();
 function done() { console.log(pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0); }

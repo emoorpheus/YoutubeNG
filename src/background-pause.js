@@ -10,6 +10,10 @@
  * (time 0, no pause event) and, on return, load it again at the same spot and
  * speed and start it (TV test pre-release03, T8). Then the pause is repeated
  * once, when that reloaded video starts playing.
+ *
+ * By the time visibilitychange fires, webOS has already stopped the <video>
+ * (paused, no pause event) while YouTube's player still says "playing", so
+ * whether it was playing is asked of the player (TV test pre-release04).
  */
 import { getVideo, SELECTORS } from './utils.js';
 
@@ -18,9 +22,22 @@ const RETURN_WINDOW_MS = 15000;
 
 let hiddenAt = null; // video time when the app was hidden mid-play
 
+function getPlayer() {
+  return document.getElementById(SELECTORS.PLAYER_ID);
+}
+
+function isPlaying(video) {
+  const player = getPlayer();
+  if (player && typeof player.getPlayerState === 'function') {
+    const state = player.getPlayerState();
+    return state === 1 || state === 3; // playing, buffering
+  }
+  return !video.paused;
+}
+
 function pause(video) {
   // Through the player, so YouTube's own state (and its UI) knows it is paused.
-  const player = document.getElementById(SELECTORS.PLAYER_ID);
+  const player = getPlayer();
   if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
   else video.pause();
 }
@@ -28,7 +45,7 @@ function pause(video) {
 document.addEventListener('visibilitychange', () => {
   const video = getVideo();
   if (document.hidden) {
-    if (!video || video.paused) return;
+    if (!video || !isPlaying(video)) return;
     hiddenAt = video.currentTime;
     pause(video);
     return;
