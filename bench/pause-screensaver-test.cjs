@@ -136,7 +136,18 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
   paused = false; time = 497.4; media('play'); media('playing');
   t('and its restart on return is paused', playerCalls.length === callsBg + 1 && playerCalls[playerCalls.length - 1] === 'pauseVideo' && paused, playerCalls);
+  // Going to another app, webOS's stop sometimes comes with a pause event,
+  // and the player follows it (state 2) before visibilitychange (TV, T8g).
+  player.playVideo(); media('playing'); ytState = 1; time = 842.8;
+  paused = true; ytState = 2; media('pause');
+  hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
+  time = 0;
+  const callsStop = playerCalls.length;
+  hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
+  paused = false; time = 842.8; media('play'); media('playing');
+  t('stopped by webOS with a pause event: the restart is paused too', playerCalls.length === callsStop + 1 && playerCalls[playerCalls.length - 1] === 'pauseVideo' && paused, playerCalls);
   // Paused by the user before Home: nothing to do on return.
+  await wait(1100);
   ytState = 2; paused = true;
   const callsPaused = playerCalls.length;
   hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));

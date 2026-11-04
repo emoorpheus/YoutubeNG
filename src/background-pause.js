@@ -12,18 +12,30 @@
  * once, when that reloaded video starts playing.
  *
  * By the time visibilitychange fires, webOS has already stopped the <video>
- * (paused, no pause event) while YouTube's player still says "playing", so
- * whether it was playing is asked of the player. YouTube's own listener on
+ * (TV test pre-release04). Mostly without a pause event, and YouTube's player
+ * still says "playing", so whether it was playing is asked of the player.
+ * Sometimes with one, and the player says "paused", so a pause less than a
+ * second before counts as webOS's, not the user's. YouTube's own listener on
  * document suspends the player (state 5) and is registered before this
- * script, so this one listens on window in the capture phase and runs first
- * (TV test pre-release04).
+ * script, so this one listens on window in the capture phase and runs first.
  */
 import { getVideo, SELECTORS } from './utils.js';
 
 // How long after the return YouTube's own restart is waited for.
 const RETURN_WINDOW_MS = 15000;
+// A pause this close before the app is hidden is webOS stopping the video.
+const STOP_BEFORE_HIDE_MS = 1000;
 
 let hiddenAt = null; // video time when the app was hidden mid-play
+let pausedAt = 0;
+
+document.addEventListener(
+  'pause',
+  (e) => {
+    if (e.target.tagName === 'VIDEO') pausedAt = Date.now();
+  },
+  true
+);
 
 function getPlayer() {
   return document.getElementById(SELECTORS.PLAYER_ID);
@@ -48,7 +60,8 @@ function pause(video) {
 window.addEventListener('visibilitychange', () => {
   const video = getVideo();
   if (document.hidden) {
-    if (!video || !isPlaying(video)) return;
+    if (!video) return;
+    if (!isPlaying(video) && Date.now() - pausedAt > STOP_BEFORE_HIDE_MS) return;
     hiddenAt = video.currentTime;
     pause(video);
     return;

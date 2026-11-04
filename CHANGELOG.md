@@ -6,7 +6,7 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 
 Fixes from the pre-release03 test on an LG OLED65M5 (webOS 25).
 
-- Back from Home or another app the video waits paused, also when YouTube unloads it in the background. YouTube drops the video right after the app is hidden and on return loads it again, at the same spot and speed, and starts it; that restart is now paused once. Play continues.
+- Back from Home or another app the video waits paused, also when YouTube unloads it in the background. YouTube drops the video right after the app is hidden and on return loads it again, at the same spot and speed, and starts it; that restart is now paused once. Play continues. webOS stops the video a moment before the app is hidden, and YouTube suspends its player on hide before the app's own listener ran; both hid that it had been playing.
 - Docs: what NG stands for (new-gen); the project is built with AI coding agents, their instructions are in `AGENTS.md` and `CLAUDE.md`.
 
 ## 1.0.0 pre-release03
