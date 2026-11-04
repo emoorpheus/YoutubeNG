@@ -162,7 +162,7 @@ const makeConfig = (env) => {
         // Catches the "ReferenceError: require is not defined" failure mode at
         // build time instead of on the TV. See the plugin for the full story.
         new AssertNoBareRequirePlugin(),
-        // Version shown in the settings panel heading: 1.0.0-pre-release02 -> "1.0.0 pre-release02".
+        // Version shown in the settings panel heading: 1.0.0-pre-releaseNN -> "1.0.0 pre-releaseNN".
         new webpack.DefinePlugin({
           __YTNG_VERSION__: JSON.stringify(pkgJson.version.replace('-', ' '))
         }),
