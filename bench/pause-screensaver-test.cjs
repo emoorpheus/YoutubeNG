@@ -31,6 +31,10 @@ player.pauseVideo = () => { playerCalls.push('pauseVideo'); paused = true; };
 player.playVideo = () => { playerCalls.push('playVideo'); paused = false; media('play'); };
 let hidden = false;
 Object.defineProperty(doc, 'hidden', { configurable: true, get: () => hidden });
+// YouTube's own listener, registered before the script: on hide it suspends
+// the player (state 5) once ytSuspends is set (as on the TV).
+let ytState = 1, ytSuspends = false;
+doc.addEventListener('visibilitychange', () => { if (hidden && ytSuspends) ytState = 5; });
 let threw = null;
 try { win.eval(fs.readFileSync(bundle, 'utf8')); } catch (e) { threw = e; }
 
@@ -121,13 +125,13 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('and Play then plays', !paused, playerCalls);
   // TV (pre-release04): webOS has already stopped the element when
   // visibilitychange fires, YouTube's player still reports "playing" (1).
-  let ytState = 1;
+  ytState = 1; ytSuspends = true;
   player.getPlayerState = () => ytState;
   time = 497.7;
   paused = true;
   hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
-  t('element already stopped by webOS, player playing: paused through the player', playerCalls[playerCalls.length - 1] === 'pauseVideo', playerCalls);
-  ytState = 5; time = 0;
+  t('element already stopped by webOS, player playing: paused through the player before YouTube suspends it', playerCalls[playerCalls.length - 1] === 'pauseVideo' && ytState === 5, [playerCalls, ytState]);
+  time = 0;
   const callsBg = playerCalls.length;
   hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
   paused = false; time = 497.4; media('play'); media('playing');

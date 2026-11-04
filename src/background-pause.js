@@ -13,7 +13,10 @@
  *
  * By the time visibilitychange fires, webOS has already stopped the <video>
  * (paused, no pause event) while YouTube's player still says "playing", so
- * whether it was playing is asked of the player (TV test pre-release04).
+ * whether it was playing is asked of the player. YouTube's own listener on
+ * document suspends the player (state 5) and is registered before this
+ * script, so this one listens on window in the capture phase and runs first
+ * (TV test pre-release04).
  */
 import { getVideo, SELECTORS } from './utils.js';
 
@@ -42,7 +45,7 @@ function pause(video) {
   else video.pause();
 }
 
-document.addEventListener('visibilitychange', () => {
+window.addEventListener('visibilitychange', () => {
   const video = getVideo();
   if (document.hidden) {
     if (!video || !isPlaying(video)) return;
@@ -72,4 +75,4 @@ document.addEventListener('visibilitychange', () => {
   // Media events do not bubble; the capture phase still sees them.
   document.addEventListener('playing', onPlaying, true);
   timer = setTimeout(stop, RETURN_WINDOW_MS);
-});
+}, true);
