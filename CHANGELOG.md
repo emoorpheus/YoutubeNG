@@ -2,6 +2,17 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
+## 1.0.0 pre-release05
+
+Brought over from youtube-webos 0.8.5 beta 2, plus small fixes.
+
+- DeArrow (new tab, off by default): crowd-sourced titles and thumbnails instead of clickbait, from dearrow.ajay.app. Titles can be re-cased (Title Case, Sentence case and others) and cleaned of emoji; where there is no crowd thumbnail it shows a frame from the video (random, start, middle or end), the original thumbnail or a blank; an optional badge marks what DeArrow replaced.
+- Display Time (Main → Interface): Off, Time, or Date + Time. The clock moves to the next minute on time and is right again after the app comes back. The old on/off setting carries over (on → Time). The clock is off by default.
+- Ad block: the filters that depend on it (Tracking Block, Shorts, live streams and the others greyed out with it) now really are off while Ad block is off; before, some of them still worked.
+- Return YouTube Dislike: 999,950 and up reads as 1m, not 1000k.
+- Tools: the installer names live in `tools/ipk-name.cjs`; `npm run version:sync` keeps `assets/appinfo.json`'s line endings, so it no longer rewrites the whole file.
+- Tests: new `bench/clock-test.cjs` and `bench/dearrow-test.cjs` (both builds); the thumbnail tests follow the response hook; `bench/run-all.sh` passes.
+
 ## 1.0.0 pre-release04
 
 Fixes from the pre-release03 test on an LG OLED65M5 (webOS 25).
