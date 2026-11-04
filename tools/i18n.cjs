@@ -32,7 +32,7 @@ const TEMPLATE = path.join(DIR, 'template.js');
 const INDEX = path.join(DIR, 'index.js');
 const RUNTIME = 'Built at runtime (not found by the scan)';
 // Names and technical terms shown as they are in every language.
-const SKIP = new Set(['YouTube Next-Gen', 'SponsorBlock', 'R', '<', '>', 'AV1', 'VP9',
+const SKIP = new Set(['YouTube Next-Gen', 'SponsorBlock', 'DeArrow', 'R', '<', '>', 'AV1', 'VP9',
   'AVC (H.264)', 'HEVC (H.265)', 'Premium']);
 // Dev-only builds (--env perf) are not translated.
 const SKIP_FILES = new Set(['perf_mon.js']);

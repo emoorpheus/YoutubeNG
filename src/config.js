@@ -40,6 +40,35 @@ export const thumbnailQualityModes = {
   eager: 'Fast'
 };
 
+/** DeArrow title formatting, in the extension's order (src/dearrow, upstream 0.8.5 b2 #200). */
+export const dearrowTitleFormats = {
+  disable: 'Disabled',
+  title_case: 'Title Case',
+  sentence_case: 'Sentence case',
+  lower_case: 'lower case',
+  first_letter_uppercase: 'First letter uppercase',
+  capitalize_words: 'Capitalize Words'
+};
+
+/**
+ * What DeArrow shows for a video nobody submitted a thumbnail for. 'random', the
+ * extension's default, is a frame the DeArrow thumbnail server renders on demand
+ * (YouTube's start frame stands in until it has); start, middle and end are
+ * YouTube's own auto-generated frames (hq1, hq2, hq3).
+ */
+export const dearrowThumbnailFallbacks = {
+  random: 'Random frame',
+  start: 'Start frame',
+  middle: 'Middle frame',
+  end: 'End frame',
+  // Not 'Original' as upstream: that text is already Thumbnail Strategy's 'safe'.
+  original: 'Original thumbnail',
+  blank: 'Blank'
+};
+
+// The DeArrow extension title-cases by default only when the browser is in English.
+const isEnglishUI = typeof navigator !== 'undefined' && /^en\b/i.test(navigator.language || '');
+
 /** Display Time in UI (watch.js): no clock, the time, or the date and time (upstream 0.8.5 b2, #203). */
 export const clockModes = {
   off: 'Off',
@@ -124,6 +153,14 @@ const configOptions = new Map([
   ['enableAdBlock', { default: true, desc: 'Ad Blocking' }],
   ['enableTrackingBlock', { default: false, desc: 'Reduce Telemetry & Tracking' }],
   ['enableReturnYouTubeDislike', { default: true, desc: 'Return YouTube Dislike' }],
+  ['enableDeArrow', { default: false, desc: 'DeArrow' }],
+  ['dearrowCrowdTitles', { default: true, desc: 'Crowdsourced titles' }],
+  // Every title shown, crowdsourced or YouTube's own.
+  ['dearrowTitleFormatting', { default: isEnglishUI ? 'title_case' : 'disable', desc: 'Title formatting' }],
+  ['dearrowCleanEmojis', { default: true, desc: 'Remove emojis and fancy text' }],
+  ['dearrowCrowdThumbnails', { default: true, desc: 'Crowdsourced thumbnails' }],
+  ['dearrowThumbnailFallback', { default: 'random', desc: 'Without a crowdsourced thumbnail' }],
+  ['dearrowShowBadge', { default: true, desc: 'Show the DeArrow logo on crowdsourced titles/thumbnails' }],
   ['upgradeThumbnails', { default: false, desc: 'Max Thumbnail Quality' }],
   ['thumbnailQualityMode', { default: 'safe', desc: 'Thumbnail Strategy' }],
   ['removeGlobalShorts', { default: false, desc: 'Remove Shorts (Global)' }],

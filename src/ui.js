@@ -1,6 +1,7 @@
 /*global navigate*/
 import './spatial-navigation-polyfill.js';
-import { clockModes, logoStyles, pauseScreensaverDelays, thumbnailQualityModes, videoCodecModes } from './config.js';
+import { clockModes, dearrowThumbnailFallbacks, dearrowTitleFormats, logoStyles, pauseScreensaverDelays, thumbnailQualityModes, videoCodecModes } from './config.js';
+import { titleFormattingSupported } from './dearrow/index.js';
 import { configAddChangeListener, configRemoveChangeListener, configRead, configWrite, configGetDesc, segmentTypes, configGetDefault, shortcutActions, sbModes, sbModesHighlight, forcePreviewModes } from './config.js';
 import './ui.css';
 import './auto-login.js';
@@ -442,7 +443,7 @@ function createOptionsPanel() {
   let activePage = 0;
   elmContainer.activePage = 0;
   elmContainer.lang = uiLanguage();
-  let pageMain, pageSponsor, pageShortcuts, pageUITweaks;
+  let pageMain, pageSponsor, pageDeArrow, pageShortcuts, pageUITweaks;
 
   const tabMenu = createElement('div', { 
     class: 'ytng-tab-menu',
@@ -455,7 +456,7 @@ function createOptionsPanel() {
       }
     }
   });
-  const tabs = ['Main', 'SponsorBlock', 'Shortcuts', 'UI Tweaks'];
+  const tabs = ['Main', 'SponsorBlock', 'DeArrow', 'Shortcuts', 'UI Tweaks'];
   const tabBtns = tabs.map((name, index) => createElement('button', {
       class: index === 0 ? 'ytng-tab-btn active' : 'ytng-tab-btn',
       text: name,
@@ -470,9 +471,9 @@ function createOptionsPanel() {
 	const setActivePage = (pageIndex) => {
 	  if (pageIndex === activePage) return; // Don't do work if we are already on this tab
 	  ensurePage(pageIndex);   // may still be queued behind the idle build chain
-	  const pagesArray = [pageMain, pageSponsor, pageShortcuts, pageUITweaks];
-	  const focusSelectors = ['input', '.shortcut-control-row, input', '.shortcut-control-row', '.shortcut-control-row, input'];
-	  const hasPopups = [false, true, false, false];
+	  const pagesArray = [pageMain, pageSponsor, pageDeArrow, pageShortcuts, pageUITweaks];
+	  const focusSelectors = ['input', '.shortcut-control-row, input', 'input', '.shortcut-control-row', '.shortcut-control-row, input'];
+	  const hasPopups = [false, true, false, false, false];
 
 	  // 1. Deactivate old state
 	  pagesArray[activePage].style.display = 'none';
@@ -531,7 +532,7 @@ function createOptionsPanel() {
 
         if (preFocus === postFocus) {
           const activeTabBtn = tabBtns[activePage];
-		  const pagesList = [pageMain, pageSponsor, pageShortcuts, pageUITweaks];
+		  const pagesList = [pageMain, pageSponsor, pageDeArrow, pageShortcuts, pageUITweaks];
 		  const visiblePage = pagesList[activePage]; 
 		  let pageFocusables = [];
 
@@ -613,7 +614,7 @@ function createOptionsPanel() {
   pageMain.appendChild(createSection('Interface', [createLanguageControl(), createConfigCheckbox('enableAutoLogin'), createConfigCheckbox('upgradeThumbnails'), createThumbnailQualityControl(), createLogoControl(), createAlignedCycleControl('showWatch', clockModes), createConfigCheckbox('enableOledCareMode'), createAlignedCycleControl('pauseScreensaver', pauseScreensaverDelays), createConfigCheckbox('disableNotifications')]));
   elmContainer.appendChild(pageMain);
 
-  // --- Pages 2-4: built off the critical path ---
+  // --- Pages 2-5: built off the critical path ---
   //
   // Only the Main page is built up front - building all four inside the keydown
   // handler cost 170ms on webOS 3, three quarters of it on display:none pages.
@@ -639,15 +640,58 @@ function createOptionsPanel() {
     elmContainer.appendChild(pageSponsor);
 
       },
+    function buildDeArrowPage() {
+  // --- Page 3: DeArrow (upstream 0.8.5 b2, #200) ---
+    pageDeArrow = createElement('div', { class: 'ytng-settings-page', id: 'ytng-page-dearrow', style: { display: 'none' }});
+    pageDeArrow.appendChild(createConfigCheckbox('enableDeArrow'));
+    // The logo beside "4K" on every video DeArrow changed (src/dearrow/tiles.js).
+    const elBadge = createConfigCheckbox('dearrowShowBadge');
+    pageDeArrow.appendChild(elBadge);
+
+    // Formatting applies to every title shown, crowdsourced or YouTube's own.
+    // The legacy build has no formatter (webpack.config.js), so no rows for it.
+    const titleRows = [createConfigCheckbox('dearrowCrowdTitles')];
+    if (titleFormattingSupported) {
+      titleRows.push(createAlignedCycleControl('dearrowTitleFormatting', dearrowTitleFormats),
+        createConfigCheckbox('dearrowCleanEmojis'));
+    }
+    const elFallback = createAlignedCycleControl('dearrowThumbnailFallback', dearrowThumbnailFallbacks);
+    const elFallbackHelp = createElement('div', { text: 'Random frame: a frame DeArrow picks from the video. Start, middle and end frames: YouTube\'s own.', style: { color: '#aaa', fontSize: '18px', padding: '4px 12px 12px' } });
+    const thumbRows = [createConfigCheckbox('dearrowCrowdThumbnails'), elFallback, elFallbackHelp];
+    pageDeArrow.appendChild(createSection('Titles', titleRows));
+    pageDeArrow.appendChild(createSection('Thumbnails', thumbRows));
+    pageDeArrow.appendChild(createElement('div', {}, createElement('small', { text: 'Crowdsourced titles and thumbnails, in place of clickbait - https://dearrow.ajay.app' })));
+    elmContainer.appendChild(pageDeArrow);
+
+    // Greyed out and out of the focus order while DeArrow is off, and the
+    // fallback while crowdsourced thumbnails are.
+    const setRowOff = (row, off) => {
+      row.style.opacity = off ? '0.5' : '1';
+      if (row.classList.contains('shortcut-control-row')) row.tabIndex = off ? -1 : 0;
+      else { const input = row.querySelector('input'); if (input) input.disabled = off; }
+    };
+    const sync = () => {
+      const on = !!configRead('enableDeArrow');
+      const thumbsOn = !!configRead('dearrowCrowdThumbnails');
+      [elBadge].concat(titleRows, thumbRows).forEach((row) => {
+        const fallbackRow = row === elFallback || row === elFallbackHelp;
+        setRowOff(row, !on || (fallbackRow && !thumbsOn));
+      });
+    };
+    listen('enableDeArrow', sync);
+    listen('dearrowCrowdThumbnails', sync);
+    sync();
+
+      },
     function buildShortcutsPage() {
-  // --- Page 3: Shortcuts ---
+  // --- Page 4: Shortcuts ---
     pageShortcuts = createElement('div', { class: 'ytng-settings-page', id: 'ytng-page-shortcuts', style: { display: 'none' }});
     shortcutKeys.forEach(key => { pageShortcuts.appendChild(createShortcutControl(key)); });
     elmContainer.appendChild(pageShortcuts);
   
       },
     function buildUITweaksPage() {
-  // --- Page 4: UI Tweaks ---
+  // --- Page 5: UI Tweaks ---
     pageUITweaks = createElement('div', { class: 'ytng-settings-page', id: 'ytng-page-ui-tweaks', style: { display: 'none' }});
   
     const playerUITweaks = [
@@ -1527,6 +1571,8 @@ configAddChangeListener('hideGuestSignInPrompts', () => syncAdblockHook());
 configAddChangeListener('hideEndcards', () => syncAdblockHook());
 // Max Thumbnail Quality rewrites URLs inside the same JSON.parse hook.
 configAddChangeListener('upgradeThumbnails', () => syncAdblockHook());
+// So does DeArrow (src/dearrow).
+configAddChangeListener('enableDeArrow', () => syncAdblockHook());
 
 configAddChangeListener('videoShelfOpacity', () => {
   // Cheap update — just retargets the CSS custom property and toggles the

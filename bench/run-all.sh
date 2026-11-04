@@ -21,9 +21,11 @@ ME=$(grep -c "^ERROR" /tmp/mod.log || true); [ "$ME" != "0" ] && { echo "MODERN 
 node bench/modern-smoke.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- playback speed 1080p cap (webOS 23+) ---"; node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- OLED mode leaves YouTube's start-up screen (webOS 23+) ---"; node bench/oled-start-screen-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- DeArrow (webOS 22+ build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- DeArrow (webOS 3 build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- feature dependencies ---";        node bench/dependency-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- thumbnail / dislike hot paths ---"; node bench/module-hotpath-bench.cjs dist/webOSUserScripts/userScript.js 2>&1 | grep -E "getBoundingClientRect|closest\(\)"
 echo "--- clock: Off / Time / Date + Time ---"; node bench/clock-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1

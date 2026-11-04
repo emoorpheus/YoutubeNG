@@ -53,7 +53,11 @@ const makeConfig = (env) => {
           [path.resolve(__dirname, 'src/emoji-font.js')]: false,
 		  [path.resolve(__dirname, 'src/hooks/buffer-limit.js')]: false,
           [path.resolve(__dirname, 'src/emoji-font.css')]: false
-          } : {})
+          } : {
+          // DeArrow's title formatter: 48 KiB, and of the TVs the legacy build
+          // runs on only webOS 5 and 6 could use it (upstream 0.8.5 b2).
+          [path.resolve(__dirname, 'src/dearrow/formatter.js')]: path.resolve(__dirname, 'src/dearrow/formatter-absent.js')
+          })
         }
       },
       module: {

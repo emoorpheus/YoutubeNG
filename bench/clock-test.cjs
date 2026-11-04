@@ -39,8 +39,8 @@ const t = (n, ok, extra) => { if (ok) { pass++; console.log('PASS ' + n); }
 
 const clock = (win) => win.document.querySelector('.webOs-watch');
 const text = (win) => (clock(win) ? clock(win).textContent : null);
-const TIME = /^\d{1,2}:\d{2}( [AP]M)?$/;
-const DATETIME = /^\d{1,2}\/\d{1,2} \d{1,2}:\d{2}( [AP]M)?$/;   // en-US: "11/5 10:49 AM"
+const TIME = /^\d{1,2}:\d{2}(?: [AP]M)?$/;
+const DATETIME = /^\d{1,2}\/\d{1,2} \d{1,2}:\d{2}(?: [AP]M)?$/;   // en-US: "11/5 10:49 AM"
 
 {
   const win = boot(true);
