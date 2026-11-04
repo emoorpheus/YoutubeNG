@@ -1,7 +1,7 @@
 /**
- * Behaviour of thumbnail-quality.js and return-dislike.js after the hot-path
- * changes: the tile tracker must still find the same elements, and the dislike
- * panel must still be detected by focus and navigate the same way.
+ * Behaviour of thumbnail-quality.js and return-dislike.js: thumbnail URLs are
+ * rewritten in the parsed response (safe vs eager, probe, write-back), and the
+ * dislike panel must still be detected by focus and navigate the same way.
  */
 const fs = require('fs');
 const path = require('path');
@@ -50,53 +50,53 @@ const t = (n, ok, extra) => { if (ok) { pass++; console.log('PASS ' + n); }
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 setTimeout(async () => {
-  // ---- thumbnail-quality: does the tracker still find every shape? ----
+  // ---- thumbnail-quality: URLs are rewritten inside the JSON.parse hook ----
+  // A continuation shaped like the ones the Home rows load while scrolling.
+  const tile = (id, names) => ({ tileRenderer: { header: { tileHeaderRenderer: { thumbnail: {
+    thumbnails: names.map((n) => ({ url: 'https://i.ytimg.com/vi/' + id + '/' + n + '.jpg', width: 480, height: 360 }))
+  } } } } });
+  // Padded: the hook skips strings under 500 chars, which no real row is.
+  const grid = (items) => JSON.stringify({ continuationContents: { gridContinuation: { items } },
+    responseContext: { padding: 'x'.repeat(500) } });
+  const urlsOf = (data, i) => data.continuationContents.gridContinuation.items[i]
+    .tileRenderer.header.tileHeaderRenderer.thumbnail.thumbnails.map((e) => e.url);
+  const settle = async (pump) => {
+    for (let i = 0; i < 4; i++) { await new Promise((r) => setTimeout(r, 40)); pump(); }
+  };
+  const bootThumbs = (mode) => boot({ upgradeThumbnails: true, thumbnailQualityMode: mode },
+    '<!doctype html><html><body class="WEB_PAGE_TYPE_BROWSE"><ytlr-app></ytlr-app></body></html>');
+
   {
-    const { win, probed, pump } = boot({ upgradeThumbnails: true },
-      '<!doctype html><html><body class="WEB_PAGE_TYPE_BROWSE"><ytlr-app></ytlr-app></body></html>');
+    const { win, probed, pump } = bootThumbs('safe');
     await tick(); pump(); await tick();
-    const d = win.document;
-    const app = d.querySelector('ytlr-app');
+    const data = win.JSON.parse(grid([
+      tile('safeHq00000', ['hqdefault']),
+      tile('shipped0000', ['hqdefault', 'maxresdefault']),
+      tile('oddName0000', ['hq1'])
+    ]));
+    await settle(pump);
+    t('safe: an unproven tile stays on hqdefault', urlsOf(data, 0)[0].endsWith('/safeHq00000/hqdefault.jpg'),
+      urlsOf(data, 0)[0]);
+    t('safe: maxresdefault is checked with one probe',
+      probed.filter((u) => /safeHq00000\/maxresdefault/.test(u)).length === 1, 'probed: ' + probed.join(' | '));
+    t('safe: lower rungs are never probed', !probed.some((u) => /hqdefault|sddefault/.test(u)),
+      'probed: ' + probed.join(' | '));
+    t('a rung YouTube shipped is used without a probe',
+      urlsOf(data, 1)[0].endsWith('/shipped0000/maxresdefault.jpg') && !probed.some((u) => /shipped0000/.test(u)),
+      urlsOf(data, 1)[0] + ' probed: ' + probed.join(' | '));
+    t('an unknown basename is left exactly as sent', urlsOf(data, 2)[0].endsWith('/oddName0000/hq1.jpg'),
+      urlsOf(data, 2)[0]);
+  }
 
-    const mk = (tag, parentTag) => {
-      const host = d.createElement(parentTag || 'div');
-      const el = d.createElement(tag);
-      el.style.backgroundImage = 'url("https://i.ytimg.com/vi/abc123XYZ_-/hqdefault.jpg")';
-      host.appendChild(el);
-      return { host, el };
-    };
-    // All three clauses of 'ytlr-thumbnail-details, ytlr-surface-page, thumbnail image'
-    const a = mk('ytlr-thumbnail-details');
-    const b = mk('ytlr-surface-page');
-    const c = mk('image', 'thumbnail');            // descendant clause
-    const nested = d.createElement('div');          // found via querySelectorAll
-    const nestedInner = d.createElement('ytlr-thumbnail-details');
-    nestedInner.style.backgroundImage = 'url("https://i.ytimg.com/vi/nested00000/hqdefault.jpg")';
-    nested.appendChild(d.createElement('div')).appendChild(nestedInner);
-    const notAThumb = d.createElement('image');     // <image> with NO <thumbnail> ancestor
-    notAThumb.style.backgroundImage = 'url("https://i.ytimg.com/vi/skipme00000/hqdefault.jpg")';
-
-    for (const n of [a.host, b.host, c.host, nested, notAThumb]) app.appendChild(n);
-    await tick(); await new Promise((r) => setTimeout(r, 60)); pump(); await tick();
-    await new Promise((r) => setTimeout(r, 60)); pump(); await tick();
-
-    const probedIds = probed.join(' ');
-    t('tracks <ytlr-thumbnail-details>', probedIds.indexOf('abc123XYZ_-') !== -1);
-    t('tracks nested thumbnails via querySelectorAll', probedIds.indexOf('nested00000') !== -1);
-    t('does NOT track <image> without a <thumbnail> ancestor',
-      probedIds.indexOf('skipme00000') === -1);
-    // The source tile is already hqdefault, and getThumbnailUrl() returns null
-    // when the rewritten path equals the original - so only the two higher
-    // qualities are probed. Asserting that keeps the no-op skip honest.
-    t('probes the higher qualities only',
-      /maxresdefault/.test(probedIds) && /sddefault/.test(probedIds) &&
-      probed.filter((u) => /hqdefault/.test(u)).length === 0,
-      'probed: ' + probed.slice(0, 4).join(' | '));
-
-    // Removal must untrack without throwing.
-    let threw = null;
-    try { app.removeChild(a.host); await tick(); } catch (e) { threw = e; }
-    t('removal untracks cleanly', !threw, threw && threw.message);
+  {
+    const { win, pump } = bootThumbs('eager');
+    await tick(); pump(); await tick();
+    const data = win.JSON.parse(grid([tile('eagerMiss00', ['hqdefault'])]));
+    t('eager: goes straight to maxresdefault', urlsOf(data, 0)[0].endsWith('/eagerMiss00/maxresdefault.jpg'),
+      urlsOf(data, 0)[0]);
+    await settle(pump);   // the probe fails (offline XHR) - the gamble missed
+    t('eager: a failed probe writes the tile back to hqdefault',
+      urlsOf(data, 0)[0].endsWith('/eagerMiss00/hqdefault.jpg'), urlsOf(data, 0)[0]);
   }
 
   // ---- return-dislike: panel detection + navigation ----
