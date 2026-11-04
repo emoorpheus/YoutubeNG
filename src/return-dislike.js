@@ -753,7 +753,8 @@ class ReturnYouTubeDislike {
   }
 
   formatNumber(num) {
-    if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
+    // From 999,950 up the thousands would round to "1000k" (upstream 0.8.5 b2).
+    if (num >= 999950) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
     if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
     return num.toString();
   }
