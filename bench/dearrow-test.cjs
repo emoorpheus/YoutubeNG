@@ -82,7 +82,16 @@ const BRANDING = {
   norandom001: { titles: [], thumbnails: [], randomTime: null, videoDuration: 300 },
   // Nobody submitted anything: a 404, whose body still carries the random time
   // and the exact length the shared frame cache is keyed on.
-  nosubmit001: { titles: [], thumbnails: [], randomTime: 0.25, videoDuration: 123.456 }
+  nosubmit001: { titles: [], thumbnails: [], randomTime: 0.25, videoDuration: 123.456 },
+  // A crowdsourced title only, for a tile whose metadata has no badge yet.
+  custom00002: {
+    titles: [{ title: 'Honest title', original: false, votes: 1, locked: false }],
+    thumbnails: [],
+    randomTime: 0.4,
+    videoDuration: 50
+  },
+  // No length from the server: the random frame's time needs the tile's own.
+  lockdur0001: { titles: [], thumbnails: [], randomTime: 0.5 }
 };
 
 /** A video tile as YouTube sends it. */
@@ -128,7 +137,9 @@ function boot(cfg, blob) {
   win.localStorage.setItem('ytng-configuration', win.JSON.stringify(Object.assign({
     enableAdBlock: true, enableLegacyEmojiFix: false, enableSponsorBlock: false,
     enableReturnYouTubeDislike: false, upgradeThumbnails: false, enableAutoLogin: false,
-    enableDeArrow: true, dearrowTitleFormatting: 'disable'
+    enableDeArrow: true, dearrowTitleFormatting: 'disable',
+    // The first-run hint would take the keys the tests press (welcome.js).
+    firstRunHintShown: true
   }, cfg)));
   if (!modern) applyChrome38Downgrade(win);
   // After the downgrade, which deletes window.fetch (Chrome 38 has none).
@@ -568,6 +579,281 @@ function shown(win, id) {
       'badge off: the DeArrow title stays',
       stored.contents[0].tileRenderer.metadata.tileMetadataRenderer.title.simpleText ===
         'the iPhone review'
+    );
+  }
+
+  // ---- webOS 25's YouTube: shelves and grids are lockupViewModel ----------------------
+  {
+    const MARK = '◉';
+    /** A video lockup as webOS 25's YouTube sends it (captured on the TV), its length on the thumbnail. */
+    const lockup = (id, title, opts) => {
+      const o = opts || {};
+      const rows = [
+        { metadataParts: [{ text: { content: 'Channel' } }] },
+        { metadataParts: [{ text: { content: '1.2m views' } }, { text: { content: '1 day ago' } }] }
+      ];
+      if (o.fourK) {
+        rows[1].badges = [
+          { badgeViewModel: { badgeText: '4K', badgeStyle: 'BADGE_DEFAULT', trackingParams: 'x' } }
+        ];
+      }
+      const titleObj = { content: title };
+      if (o.styled) titleObj.styleRuns = [{ startIndex: 0, length: title.length }];
+      return {
+        lockupViewModel: {
+          contentImage: {
+            thumbnailViewModel: {
+              image: {
+                sources: [{ url: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, width: 320, height: 180 }]
+              },
+              overlays: [
+                {
+                  thumbnailBottomOverlayViewModel: {
+                    badges: [{ thumbnailBadgeViewModel: { text: o.length || '1:40' } }]
+                  }
+                }
+              ]
+            }
+          },
+          metadata: {
+            lockupMetadataViewModel: {
+              title: titleObj,
+              metadata: { contentMetadataViewModel: { metadataRows: rows, delimiter: ' • ' } }
+            }
+          },
+          contentId: id,
+          contentType: o.type || 'LOCKUP_CONTENT_TYPE_VIDEO',
+          rendererContext: {
+            commandContext: { onTap: { innertubeCommand: { watchEndpoint: { videoId: id } } } }
+          }
+        }
+      };
+    };
+    /**
+     * Draws a lockup the way webOS 25's YouTube does: <thumbnail><div><image> with the
+     * background, the title, the rows with their badges. Made with createElement: the
+     * HTML parser would turn <image> into <img>.
+     */
+    const drawLockup = (win, lv, opts) => {
+      const o = opts || {};
+      const d = win.document;
+      const make = (tag, parent, txt) => {
+        const el = d.createElement(tag);
+        if (txt !== undefined) el.textContent = txt;
+        if (parent) parent.appendChild(el);
+        return el;
+      };
+      const el = make('yt-lockup-view-model');
+      el.setAttribute('data-test-id', lv.contentId);
+      const image = make('image', make('div', make('thumbnail', el)));
+      image.style.backgroundImage = `url("${lv.contentImage.thumbnailViewModel.image.sources[0].url}")`;
+      // The horizontal layout (a shelf of wide tiles) wraps the text in a div.
+      const outer = make('yt-lockup-metadata-view-model', el);
+      const meta = o.horizontal ? make('div', outer) : outer;
+      if (o.lead) make('yt-core-attributed-string', meta, o.lead);
+      make('yt-core-attributed-string', meta, lv.metadata.lockupMetadataViewModel.title.content);
+      const rowsEl = make('yt-content-metadata-view-model', meta);
+      lv.metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.forEach((row) => {
+        const r = make('yt-metadata-row', rowsEl);
+        (row.badges || []).forEach((b) => {
+          make('yt-core-attributed-string', make('yt-badge', r), b.badgeViewModel.badgeText);
+        });
+        row.metadataParts.forEach((part) => {
+          make('yt-core-attributed-string', make('yt-metadata-part', r), part.text.content);
+        });
+      });
+      d.querySelector('ytlr-app').appendChild(el);
+      return el;
+    };
+    const onScreen = (el, at) => {
+      const bg = el.querySelector('thumbnail image').style.backgroundImage;
+      return {
+        title: el.querySelectorAll('yt-lockup-metadata-view-model yt-core-attributed-string')[at || 0]
+          .textContent,
+        thumb: decodeURIComponent(bg),
+        small: bg.indexOf('SMALL#') !== -1
+      };
+    };
+
+    const p = boot({});
+    await wait(50);
+    const text = response([
+      lockup('custom00001', 'Clickbait', { fourK: true, styled: true }),
+      lockup('downvoted01', 'Original title'),
+      lockup('lockdur0001', 'Length from the badge', { length: '2:00' }),
+      lockup('custom00002', 'Plain row', {}),
+      lockup('short000001', 'A short', { type: 'LOCKUP_CONTENT_TYPE_SHORT' })
+    ]);
+    const stored = p.win.JSON.parse(text);
+    const lv = (i) => stored.contents[i].lockupViewModel;
+    const titleOf = (i) => lv(i).metadata.lockupMetadataViewModel.title;
+    const rowBadges = (i) =>
+      lv(i).metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows[1].badges;
+    const badgeTexts = (i) => (rowBadges(i) || []).map((b) => b.badgeViewModel.badgeText);
+    const els = [0, 1, 2, 3].map((i) => drawLockup(p.win, lv(i)));
+    // Drawn before the answers too: custom00001 again in a wide shelf, and custom00002
+    // behind a label that is not its title.
+    const wide = drawLockup(p.win, lv(0), { horizontal: true });
+    const led = drawLockup(p.win, lv(3), { lead: 'Up next' });
+    await waitFor(() => onScreen(els[0]).small && badgeTexts(3).length, 3000);
+    await wait(400);
+
+    const a = onScreen(els[0]);
+    t('lockup: the crowdsourced title on screen', a.title === 'the iPhone review', a.title);
+    t(
+      'lockup: the submitted thumbnail on screen, as a small copy',
+      a.small && a.thumb.indexOf('getThumbnail?videoID=custom00001&time=12.5') !== -1,
+      a.thumb
+    );
+    t(
+      'lockup: the stored response has the title, without the style ranges of the old one',
+      titleOf(0).content === 'the iPhone review' && titleOf(0).styleRuns === undefined,
+      JSON.stringify(titleOf(0))
+    );
+    t(
+      'lockup: and the thumbnail',
+      lv(0).contentImage.thumbnailViewModel.image.sources[0].url.indexOf('SMALL#') !== -1,
+      lv(0).contentImage.thumbnailViewModel.image.sources[0].url.slice(0, 60)
+    );
+    t(
+      'lockup: the DeArrow badge goes after "4K", in its style',
+      JSON.stringify(badgeTexts(0)) === JSON.stringify(['4K', MARK]) &&
+        rowBadges(0)[1].badgeViewModel.badgeStyle === 'BADGE_DEFAULT' &&
+        rowBadges(0)[1].badgeViewModel.trackingParams === undefined,
+      JSON.stringify(rowBadges(0))
+    );
+    t(
+      'lockup: a row without badges gets the DeArrow badge as its first',
+      JSON.stringify(badgeTexts(3)) === JSON.stringify([MARK]) && onScreen(els[3]).title === 'Honest title',
+      JSON.stringify(badgeTexts(3)) + ' ' + onScreen(els[3]).title
+    );
+    t("lockup: a downvoted title stays YouTube's", onScreen(els[1]).title === 'Original title');
+    t('lockup: a fallback thumbnail alone gets no badge', rowBadges(1) === undefined);
+    t(
+      "lockup: the random frame's time uses the length on the thumbnail (0.5 x 2:00)",
+      p.images.some((u) => u.indexOf('videoID=lockdur0001&time=60') !== -1),
+      p.images.filter((u) => u.indexOf('lockdur0001') !== -1).join(' ')
+    );
+    t('lockup: Shorts are left alone', !p.fetched.some((u) => u.indexOf('short000001') !== -1));
+    const again = p.win.JSON.parse(text);
+    t(
+      'lockup: a known video is rewritten inside JSON.parse',
+      again.contents[0].lockupViewModel.metadata.lockupMetadataViewModel.title.content ===
+        'the iPhone review'
+    );
+
+    t(
+      'lockup: a wide shelf tile (title in a div) gets the title too',
+      onScreen(wide).title === 'the iPhone review' && onScreen(wide).small,
+      onScreen(wide).title
+    );
+    t(
+      'lockup: only the title is replaced, not a label before it',
+      onScreen(led, 0).title === 'Up next' && onScreen(led, 1).title === 'Honest title',
+      onScreen(led, 0).title + ' / ' + onScreen(led, 1).title
+    );
+    // Drawn before the answer: YouTube does not draw the tile again, so the badge is a copy
+    // of the tile's own "4K" put after it, with the logo.
+    const copies = (el) => Array.from(el.querySelectorAll('yt-badge')).filter((b) => b.textContent === MARK);
+    const c0 = copies(els[0]);
+    const row0 = els[0].querySelectorAll('yt-metadata-row')[1];
+    t(
+      'lockup on screen: a tile drawn before the answer gets the badge, after its "4K"',
+      c0.length === 1 &&
+        row0.children[0].textContent === '4K' &&
+        row0.children[1] === c0[0] &&
+        c0[0].querySelector('.ytng-dearrow-badge') !== null,
+      Array.from(row0.children).map((x) => x.tagName + ':' + x.textContent).join(' ')
+    );
+    const c3 = copies(els[3]);
+    const row3 = els[3].querySelectorAll('yt-metadata-row')[1];
+    t(
+      'lockup on screen: a row without badges gets it first, in a badge of the page',
+      c3.length === 1 && row3.firstChild === c3[0],
+      Array.from(row3.children).map((x) => x.tagName + ':' + x.textContent).join(' ')
+    );
+    t('lockup on screen: no badge for a fallback thumbnail alone', copies(els[1]).length === 0);
+    for (const x of c0.concat(c3)) x.parentNode.removeChild(x);
+
+    // YouTube draws the badge from the stored response; the sweep puts the logo on it.
+    const row = els[0].querySelectorAll('yt-metadata-row')[1];
+    const pill = p.win.document.createElement('yt-badge');
+    const label = p.win.document.createElement('yt-core-attributed-string');
+    label.textContent = MARK;
+    pill.appendChild(label);
+    row.insertBefore(pill, row.querySelector('yt-metadata-part'));
+    press(p.win, KEYS.DOWN, p.win.document.body);
+    await wait(400);
+    t(
+      'lockup: on screen the mark gets the logo',
+      label.classList.contains('ytng-dearrow-badge') && pill.style.display === '',
+      label.className + ' ' + pill.style.display
+    );
+    t('lockup: with the badge YouTube drew, no copy is added', copies(els[0]).length === 1);
+    // YouTube reuses that badge for other text ("New", another video's): the logo comes off
+    // it, and the tile, without a mark now, gets its copy again; drawn again, the copy goes.
+    label.textContent = 'New';
+    press(p.win, KEYS.DOWN, p.win.document.body);
+    await wait(400);
+    t(
+      'lockup: a badge YouTube reused for other text loses the logo',
+      !label.classList.contains('ytng-dearrow-badge') &&
+        label.style.backgroundImage === '' &&
+        pill.style.display === '',
+      label.className + ' ' + label.style.backgroundImage.slice(0, 20) + ' ' + pill.style.display
+    );
+    t(
+      'lockup: and the tile gets its copy again',
+      copies(els[0]).length === 1 && copies(els[0])[0] !== pill,
+      copies(els[0]).length
+    );
+    label.textContent = MARK;
+    press(p.win, KEYS.DOWN, p.win.document.body);
+    await wait(400);
+    t(
+      'lockup: drawn again by YouTube, the copy goes',
+      copies(els[0]).length === 1 &&
+        copies(els[0])[0] === pill &&
+        label.classList.contains('ytng-dearrow-badge'),
+      copies(els[0]).length
+    );
+
+    // DeArrow off in the panel: YouTube's own back, on screen and in the stored response.
+    openPanel(p);
+    openDeArrowTab(p.win).click();
+    p.win.document.querySelector('#ytng-page-dearrow input[type="checkbox"]').click();
+    await wait(400);
+    const off = onScreen(els[0]);
+    t("lockup off: YouTube's title back on screen", off.title === 'Clickbait', off.title);
+    t(
+      'lockup off: and its thumbnail',
+      !off.small && off.thumb.indexOf('/vi/custom00001/hqdefault.jpg') !== -1,
+      off.thumb
+    );
+    t('lockup off: the badge on screen is hidden', pill.style.display === 'none');
+    t(
+      'lockup off: the copied badges are gone',
+      copies(els[3]).length === 0 && copies(wide).length === 0,
+      copies(els[3]).length + ' ' + copies(wide).length
+    );
+    t("lockup off: the wide tile's title is back", onScreen(wide).title === 'Clickbait');
+    t(
+      "lockup off: the stored response is YouTube's again",
+      titleOf(0).content === 'Clickbait' &&
+        Array.isArray(titleOf(0).styleRuns) &&
+        lv(0).contentImage.thumbnailViewModel.image.sources[0].url.indexOf('/vi/custom00001/hqdefault.jpg') !== -1 &&
+        JSON.stringify(badgeTexts(0)) === JSON.stringify(['4K']),
+      JSON.stringify([titleOf(0), badgeTexts(0), lv(0).contentImage.thumbnailViewModel.image.sources[0].url.slice(0, 50)])
+    );
+    t('lockup off: a row that had no badges has none again', rowBadges(3) === undefined, JSON.stringify(rowBadges(3)));
+    // Off, YouTube reuses the hidden badge for other text: it shows at the next key press.
+    label.textContent = '4K';
+    press(p.win, KEYS.DOWN, p.win.document.body);
+    await wait(400);
+    t(
+      'lockup off: a hidden badge YouTube reused for other text shows again',
+      pill.style.display === '' && !label.classList.contains('ytng-dearrow-badge'),
+      pill.style.display + ' ' + label.className
     );
   }
 

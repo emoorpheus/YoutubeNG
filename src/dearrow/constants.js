@@ -40,14 +40,28 @@ export const TILES_PER_VIDEO = 8;
 // looks like the logo.
 export const BADGE_MARK = '\u25C9';
 
-// YouTube's elements of a rendered tile: the tile, its thumbnail, its
-// metadata block and the title in it.
-export const SELECTORS = {
-  TILE: 'ytlr-tile-renderer',
-  THUMBNAIL_TILE: 'ytlr-thumbnail-details',
-  TILE_METADATA: 'ytlr-tile-metadata-renderer',
-  TILE_TITLE: 'ytlr-tile-metadata-renderer yt-formatted-string'
-};
+// YouTube's elements of a rendered tile: the tile, its thumbnail (the element
+// whose background is the image), its metadata block and the text elements
+// the title is one of (the sweep takes the one showing it). The classic TV UI
+// draws ytlr-tile-renderer; webOS 25's YouTube (the 2025 UI) draws its
+// shelves and grids as yt-lockup-view-model, with the metadata badges and
+// rows a DeArrow badge is copied from and into (sweep.js).
+export const TILE_LAYOUTS = [
+  {
+    TILE: 'ytlr-tile-renderer',
+    THUMBNAIL: 'ytlr-thumbnail-details',
+    METADATA: 'ytlr-tile-metadata-renderer',
+    TITLE: 'ytlr-tile-metadata-renderer yt-formatted-string'
+  },
+  {
+    TILE: 'yt-lockup-view-model',
+    THUMBNAIL: 'thumbnail image',
+    METADATA: 'yt-lockup-metadata-view-model',
+    TITLE: 'yt-lockup-metadata-view-model yt-core-attributed-string',
+    BADGE: 'yt-metadata-row yt-badge',
+    ROW: 'yt-metadata-row'
+  }
+];
 
 // The bounded walk over a response that finds its video tiles.
 export const SCAN_MAX_NODES = 20000;

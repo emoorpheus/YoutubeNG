@@ -5,7 +5,8 @@
 // answer lands (applyToVideo), so YouTube draws it right whenever it draws it
 // from that response (scrolling, coming back to a page). YouTube keeps
 // parsed responses and renders cached pages from them, so what each tile had
-// is recorded once and can be put back.
+// is recorded once and can be put back. Tiles come as tileRenderer (the
+// classic TV UI) or, on webOS 25's YouTube (the 2025 UI), as lockupViewModel.
 import { configRead } from '../config.js';
 import { TILES_PER_VIDEO, SCAN_MAX_DEPTH, SCAN_MAX_NODES, BADGE_MARK } from './constants.js';
 import { videos } from './state.js';
@@ -19,8 +20,25 @@ const SKIP_KEYS = {
   onLongPressCommand: true,
   onSelectCommand: true,
   onFocusCommand: true,
-  trackingParams: true
+  trackingParams: true,
+  // A lockup's commands, its long-press menu among them.
+  rendererContext: true
 };
+
+// A video lockup (webOS 25's YouTube): its title is { content }, its image
+// { sources }, its badges ("4K", "New") a list on one of its metadata rows.
+const LOCKUP_VIDEO = 'LOCKUP_CONTENT_TYPE_VIDEO';
+const isLockup = (tile) => tile.contentType === LOCKUP_VIDEO;
+const lockupMeta = (lockup) => lockup.metadata?.lockupMetadataViewModel;
+const lockupImage = (lockup) => lockup.contentImage?.thumbnailViewModel?.image || null;
+/** A lockup's metadata rows (the channel; the views and the age, with the badges). */
+function lockupRows(lockup) {
+  const rows = lockupMeta(lockup)?.metadata?.contentMetadataViewModel?.metadataRows;
+  return Array.isArray(rows) ? rows : [];
+}
+// Ranges into a lockup title's text (styling, links): they would point past
+// a shorter DeArrow title, so they are out while it is shown.
+const TITLE_RUN_KEYS = ['styleRuns', 'commandRuns', 'attachmentRuns', 'decorationRuns'];
 
 // tile -> what YouTube had in it: { title, simpleText, runs, thumbnail,
 // thumbnails, items, badge }; `items` and `badge` are the metadata line the
@@ -32,6 +50,9 @@ const originals = new WeakMap();
 // look. Until one is seen, the plain shape those badges have.
 let badgeTemplate = { metadataBadgeRenderer: { style: 'BADGE_STYLE_TYPE_SIMPLE' } };
 let badgeLearned = false;
+// The same for lockups, whose badges are badgeViewModel.
+let lockupBadgeTemplate = { badgeViewModel: { badgeStyle: 'BADGE_DEFAULT' } };
+let lockupBadgeLearned = false;
 
 /** "1:02:03" -> 3723 seconds; null for anything else. */
 function parseDuration(text) {
@@ -58,6 +79,31 @@ function readTile(tile) {
   return {
     original,
     originalThumb: header?.thumbnail?.thumbnails?.[0]?.url ?? null,
+    duration
+  };
+}
+
+/** The same for a lockup: its length is the text of a badge on the thumbnail ("13:00"). */
+function readLockup(lockup) {
+  const title = lockupMeta(lockup)?.title;
+  const thumbnail = lockup.contentImage?.thumbnailViewModel;
+  let duration = null;
+  const overlays = thumbnail?.overlays;
+  if (Array.isArray(overlays)) {
+    for (let i = 0; i < overlays.length && duration === null; i++) {
+      const overlay = overlays[i] || {};
+      const badges =
+        overlay.thumbnailBottomOverlayViewModel?.badges ||
+        overlay.thumbnailOverlayBadgeViewModel?.thumbnailBadges;
+      if (!Array.isArray(badges)) continue;
+      for (let j = 0; j < badges.length && duration === null; j++) {
+        duration = parseDuration(badges[j]?.thumbnailBadgeViewModel?.text);
+      }
+    }
+  }
+  return {
+    original: title && typeof title.content === 'string' ? title.content : null,
+    originalThumb: thumbnail?.image?.sources?.[0]?.url ?? null,
     duration
   };
 }
@@ -118,10 +164,74 @@ function badgeSlot(lists) {
   return lists.length ? [lists[lists.length - 1], 0] : null;
 }
 
+/** Remembers a lockup's first badge, without its label, as the shape of its DeArrow badge. */
+function learnLockupBadge(rows) {
+  for (let i = 0; i < rows.length && !lockupBadgeLearned; i++) {
+    const badges = rows[i] && rows[i].badges;
+    if (!Array.isArray(badges)) continue;
+    for (let j = 0; j < badges.length; j++) {
+      if (!badges[j] || !badges[j].badgeViewModel) continue;
+      lockupBadgeTemplate = JSON.parse(JSON.stringify(badges[j]));
+      lockupBadgeLearned = true;
+      break;
+    }
+  }
+}
+
+/** A DeArrow badge for a lockup: the learned one with BADGE_MARK as its text. */
+function makeLockupBadge() {
+  const badge = JSON.parse(JSON.stringify(lockupBadgeTemplate));
+  const model = badge.badgeViewModel;
+  model.badgeText = BADGE_MARK;
+  delete model.icon;
+  delete model.trackingParams;
+  delete model.rendererContext;
+  return badge;
+}
+
+/**
+ * Where a lockup's DeArrow badge goes: after the badges of the row that has
+ * them (next to "4K"), else first on the last row (views and age), which
+ * then gets a badge list. Returns [badges, index, row the list was made on].
+ */
+function lockupBadgeSlot(lockup) {
+  const rows = lockupRows(lockup);
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] && Array.isArray(rows[i].badges)) return [rows[i].badges, rows[i].badges.length];
+  }
+  const last = rows[rows.length - 1];
+  if (!last) return null;
+  last.badges = [];
+  return [last.badges, 0, last];
+}
+
 /** The record of what YouTube had in `tile`, made the first time DeArrow writes to it. */
 function originalOf(tile) {
   let rec = originals.get(tile);
   if (rec) return rec;
+  if (isLockup(tile)) {
+    const title = lockupMeta(tile)?.title || null;
+    const image = lockupImage(tile);
+    const runs = {};
+    if (title) {
+      TITLE_RUN_KEYS.forEach((key) => {
+        if (title[key] !== undefined) runs[key] = title[key];
+      });
+    }
+    rec = {
+      lockup: true,
+      title,
+      content: title ? title.content : undefined,
+      runs,
+      thumbnail: image,
+      thumbnails: image ? image.sources : null,
+      items: null,
+      row: null,
+      badge: null
+    };
+    originals.set(tile, rec);
+    return rec;
+  }
   const title = tile.metadata?.tileMetadataRenderer?.title || null;
   const thumbnail = tile.header?.tileHeaderRenderer?.thumbnail || null;
   rec = {
@@ -131,6 +241,7 @@ function originalOf(tile) {
     thumbnail,
     thumbnails: thumbnail ? thumbnail.thumbnails : null,
     items: null,
+    row: null,
     badge: null
   };
   originals.set(tile, rec);
@@ -140,6 +251,11 @@ function originalOf(tile) {
 /** Puts YouTube's own title back into a tile. */
 function restoreTitle(rec) {
   if (!rec.title) return;
+  if (rec.lockup) {
+    rec.title.content = rec.content;
+    for (const key in rec.runs) rec.title[key] = rec.runs[key];
+    return;
+  }
   if (rec.simpleText === undefined) delete rec.title.simpleText;
   else rec.title.simpleText = rec.simpleText;
   if (rec.runs) rec.title.runs = rec.runs;
@@ -150,8 +266,28 @@ function removeBadge(rec) {
   if (!rec.badge) return;
   const at = rec.items.indexOf(rec.badge);
   if (at !== -1) rec.items.splice(at, 1);
+  // A lockup row that had no badges goes back to having none.
+  if (rec.row && rec.row.badges === rec.items && !rec.items.length) delete rec.row.badges;
   rec.items = null;
+  rec.row = null;
   rec.badge = null;
+}
+
+/** Puts YouTube's own thumbnail back into a tile. */
+function restoreThumb(rec) {
+  if (rec.thumbnail) rec.thumbnail[rec.lockup ? 'sources' : 'thumbnails'] = rec.thumbnails;
+}
+
+/**
+ * Whether `video`'s tiles get the DeArrow badge: while the badge setting is
+ * on, for what the community submitted only (with the Random frame fallback
+ * nearly every thumbnail changes, and a badge on every tile tells nothing).
+ */
+export function wantsBadge(video) {
+  return (
+    !!((video.title && video.crowdTitle) || (video.thumb && video.crowdThumb)) &&
+    !!configRead('dearrowShowBadge')
+  );
 }
 
 /**
@@ -163,8 +299,13 @@ function applyToTile(tile, video) {
   const rec = originalOf(tile);
   if (rec.title) {
     if (video.title) {
-      rec.title.simpleText = video.title;
-      delete rec.title.runs;
+      if (rec.lockup) {
+        rec.title.content = video.title;
+        for (const key in rec.runs) delete rec.title[key];
+      } else {
+        rec.title.simpleText = video.title;
+        delete rec.title.runs;
+      }
       video.shownTitle = video.title;
     } else {
       restoreTitle(rec);
@@ -172,22 +313,21 @@ function applyToTile(tile, video) {
   }
   if (rec.thumbnail) {
     if (video.thumb) {
-      rec.thumbnail.thumbnails = [{ url: video.thumb, width: 1280, height: 720 }];
+      rec.thumbnail[rec.lockup ? 'sources' : 'thumbnails'] = [
+        { url: video.thumb, width: 1280, height: 720 }
+      ];
       video.shownThumb = video.thumb;
     } else {
-      rec.thumbnail.thumbnails = rec.thumbnails;
+      restoreThumb(rec);
     }
   }
-  // Only for what the community submitted: with the Random frame fallback
-  // nearly every thumbnail changes, and a badge on every tile tells nothing.
-  const wantBadge =
-    !!((video.title && video.crowdTitle) || (video.thumb && video.crowdThumb)) &&
-    !!configRead('dearrowShowBadge');
+  const wantBadge = wantsBadge(video);
   if (wantBadge && !rec.badge) {
-    const slot = badgeSlot(lineItemLists(tile));
+    const slot = rec.lockup ? lockupBadgeSlot(tile) : badgeSlot(lineItemLists(tile));
     if (slot) {
       rec.items = slot[0];
-      rec.badge = makeBadge();
+      rec.row = slot[2] || null;
+      rec.badge = rec.lockup ? makeLockupBadge() : makeBadge();
       rec.items.splice(slot[1], 0, rec.badge);
     }
   } else if (!wantBadge) {
@@ -210,7 +350,7 @@ export function unpatchResponses() {
       const rec = originals.get(tile);
       if (!rec) continue;
       restoreTitle(rec);
-      if (rec.thumbnail) rec.thumbnail.thumbnails = rec.thumbnails;
+      restoreThumb(rec);
       removeBadge(rec);
       originals.delete(tile);
     }
@@ -225,6 +365,19 @@ function remember(video, tile) {
     // An older cached page may keep a DeArrow title until YouTube asks for it again.
     video.tiles.shift();
   }
+}
+
+/** The video tile `node` holds: a tileRenderer or a lockupViewModel, or null. */
+function videoTile(node) {
+  const tile = node.tileRenderer;
+  if (tile && tile.contentType === 'TILE_CONTENT_TYPE_VIDEO' && typeof tile.contentId === 'string') {
+    return tile;
+  }
+  const lockup = node.lockupViewModel;
+  if (lockup && lockup.contentType === LOCKUP_VIDEO && typeof lockup.contentId === 'string') {
+    return lockup;
+  }
+  return null;
 }
 
 /**
@@ -242,17 +395,18 @@ export function patchResponseTiles(data) {
     const depth = nodes[index++];
     if (depth > SCAN_MAX_DEPTH) continue;
 
-    const tile = node.tileRenderer;
-    if (
-      tile &&
-      tile.contentType === 'TILE_CONTENT_TYPE_VIDEO' &&
-      typeof tile.contentId === 'string'
-    ) {
-      if (!badgeLearned) learnBadge(lineItemLists(tile));
+    const tile = videoTile(node);
+    if (tile) {
+      const lockup = isLockup(tile);
+      if (lockup) {
+        if (!lockupBadgeLearned) learnLockupBadge(lockupRows(tile));
+      } else if (!badgeLearned) {
+        learnBadge(lineItemLists(tile));
+      }
       const videoId = tile.contentId;
       let video = videos.get(videoId);
       if (!video) {
-        const info = readTile(tile);
+        const info = lockup ? readLockup(tile) : readTile(tile);
         video = {
           original: info.original,
           originalThumb: info.originalThumb,

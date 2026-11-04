@@ -6,7 +6,7 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 
 Brought over from youtube-webos 0.8.5 beta 2, plus small fixes.
 
-- DeArrow (new tab, off by default): crowd-sourced titles and thumbnails instead of clickbait, from dearrow.ajay.app. Titles can be re-cased (Title Case, Sentence case and others) and cleaned of emoji; where there is no crowd thumbnail it shows a frame from the video (random, start, middle or end), the original thumbnail or a blank; an optional badge marks what DeArrow replaced.
+- DeArrow (new tab, off by default): crowd-sourced titles and thumbnails instead of clickbait, from dearrow.ajay.app. Titles can be re-cased (Title Case, Sentence case and others) and cleaned of emoji; where there is no crowd thumbnail it shows a frame from the video (random, start, middle or end), the original thumbnail or a blank; an optional badge marks what DeArrow replaced. Here it also works on the newer tiles webOS 25's YouTube draws in search and on Home, tiles already on screen when the answer comes included.
 - Display Time (Main → Interface): Off, Time, or Date + Time. The clock moves to the next minute on time and is right again after the app comes back. The old on/off setting carries over (on → Time). The clock is off by default.
 - Ad block: the filters that depend on it (Tracking Block, Shorts, live streams and the others greyed out with it) now really are off while Ad block is off; before, some of them still worked.
 - Return YouTube Dislike: 999,950 and up reads as 1m, not 1000k.

@@ -34,12 +34,16 @@ function cancelSweep() {
   sweepTimer = null;
 }
 
-/** Sweeps the rendered tiles SWEEP_DELAY from now, once however often it is asked. */
+/**
+ * Sweeps the rendered tiles SWEEP_DELAY from now, once however often it is
+ * asked. With DeArrow off it puts YouTube's own back, for what tiles YouTube
+ * reuses still had of DeArrow (a badge it hid), while videos are remembered.
+ */
 function scheduleSweep() {
-  if (sweepTimer || !configRead('enableDeArrow')) return;
+  if (sweepTimer) return;
   sweepTimer = setTimeout(() => {
     sweepTimer = null;
-    sweepTiles(false);
+    sweepTiles(!configRead('enableDeArrow'));
   }, SWEEP_DELAY);
 }
 
