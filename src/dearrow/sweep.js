@@ -4,7 +4,7 @@
 // small copies are looked up), and only text or images this feature wrote
 // are ever put back. The DeArrow badge YouTube draws from the responses
 // (tiles.js) gets the logo here, or is hidden while the badge is off; a
-// lockup YouTube drew before its video's answer gets a copy of a badge.
+// tile YouTube drew before its video's answer gets a copy of a badge.
 import { configRead } from '../config.js';
 import { TILE_LAYOUTS, VIDEO_ID_RE, BADGE_MARK } from './constants.js';
 import logoUrl from './dearrow-logo.png';
@@ -81,7 +81,7 @@ function sweepTitle(titleEl, video, want) {
 }
 
 const BADGE_CLASS = 'ytng-dearrow-badge';
-// A badge the sweep added (a lockup YouTube drew before the answer).
+// A badge the sweep added (a tile YouTube drew before the answer).
 const COPY_CLASS = 'ytng-dearrow-badge-copy';
 // On a badge of YouTube's the sweep hid.
 const HIDDEN_ATTR = 'data-ytng-dearrow-hidden';
@@ -102,7 +102,7 @@ function inCopy(el, meta) {
 }
 
 /**
- * Adds the DeArrow badge to a lockup YouTube drew without it: a copy of the
+ * Adds the DeArrow badge to a tile YouTube drew without it: a copy of the
  * tile's last badge ("4K"), after it, or else of the page's first, first in
  * the tile's last row (the views and the age). None without either.
  */
@@ -140,7 +140,7 @@ function addCopy(meta, layout) {
  * The DeArrow badges in a tile (the text BADGE_MARK): the logo drawn over the
  * mark, or with `hide` the whole badge hidden (DeArrow or its badge off, or
  * not for this video, until YouTube draws the tile again without it). With
- * `copy` (the badge is wanted for the tile's video), a lockup YouTube drew
+ * `copy` (the badge is wanted for the tile's video), a tile YouTube drew
  * without one gets a copy, gone again once YouTube draws its own. What
  * YouTube reused for other text ("4K") loses what was put on it.
  */

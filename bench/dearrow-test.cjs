@@ -498,6 +498,16 @@ function shown(win, id) {
     const stored = p.win.JSON.parse(
       response([lined('custom00001', 'Clickbait', true), lined('norandom001', 'Plain', false)])
     );
+    // Drawn before the answers, the way webOS 25's YouTube draws a classic tile (captured
+    // on the TV): the lines are ytlr-line, "4K" a yt-badge.
+    const early = p.win.document.createElement('ytlr-tile-renderer');
+    early.innerHTML =
+      '<ytlr-thumbnail-details style="background-image: url(&quot;https://i.ytimg.com/vi/custom00001/hqdefault.jpg&quot;)"></ytlr-thumbnail-details>' +
+      '<ytlr-tile-metadata-renderer><div><yt-formatted-string>Clickbait</yt-formatted-string></div>' +
+      '<ytlr-line><yt-formatted-string>Channel</yt-formatted-string></ytlr-line>' +
+      '<ytlr-line><yt-badge><yt-core-attributed-string>4K</yt-core-attributed-string></yt-badge>' +
+      '<yt-formatted-string>1.2m views</yt-formatted-string></ytlr-line></ytlr-tile-metadata-renderer>';
+    p.win.document.querySelector('ytlr-app').appendChild(early);
     const items = (o, i) =>
       o.contents[i].tileRenderer.metadata.tileMetadataRenderer.lines[1].lineRenderer.items;
     const labels = (list) =>
@@ -553,6 +563,18 @@ function shown(win, id) {
       leaf.className + ' ' + leaf.style.backgroundImage.slice(0, 40)
     );
     t('and the badge shows', tileEl.querySelector('#da').style.display === '');
+    const earlyLine = early.querySelectorAll('ytlr-line')[1];
+    t(
+      'on screen: a tile drawn before the answer gets the title, and the badge after its "4K"',
+      early.querySelector('yt-formatted-string').textContent === 'the iPhone review' &&
+        earlyLine.children.length === 3 &&
+        earlyLine.children[1].tagName === 'YT-BADGE' &&
+        earlyLine.children[1].textContent === MARK &&
+        earlyLine.children[1].querySelector('.ytng-dearrow-badge') !== null,
+      early.querySelector('yt-formatted-string').textContent +
+        ' / ' +
+        Array.from(earlyLine.children).map((x) => x.tagName + ':' + x.textContent).join(' ')
+    );
 
     // The badge switched off in the panel: hidden at once, and out of the stored responses.
     openPanel(p);
@@ -569,6 +591,11 @@ function shown(win, id) {
     t(
       'badge off: the badge on screen is hidden',
       tileEl.querySelector('#da').style.display === 'none'
+    );
+    t(
+      'badge off: the copied badge is gone',
+      earlyLine.children.length === 2 && earlyLine.textContent.indexOf(MARK) === -1,
+      Array.from(earlyLine.children).map((x) => x.tagName + ':' + x.textContent).join(' ')
     );
     t(
       'badge off: the stored response is back to "4K" and the views',
@@ -695,6 +722,10 @@ function shown(win, id) {
     // behind a label that is not its title.
     const wide = drawLockup(p.win, lv(0), { horizontal: true });
     const led = drawLockup(p.win, lv(3), { lead: 'Up next' });
+    // A localized thumbnail (Russian UI): YouTube's /vi_lc/ path, with the id all the same.
+    const localized = drawLockup(p.win, lv(0));
+    localized.querySelector('thumbnail image').style.backgroundImage =
+      'url("https://i.ytimg.com/vi_lc/custom00001/hqdefault_ru.jpg?sqp=CJDf")';
     await waitFor(() => onScreen(els[0]).small && badgeTexts(3).length, 3000);
     await wait(400);
 
@@ -746,6 +777,11 @@ function shown(win, id) {
       'lockup: a wide shelf tile (title in a div) gets the title too',
       onScreen(wide).title === 'the iPhone review' && onScreen(wide).small,
       onScreen(wide).title
+    );
+    t(
+      'lockup: a tile with a localized thumbnail (/vi_lc/) gets the title and thumbnail too',
+      onScreen(localized).title === 'the iPhone review' && onScreen(localized).small,
+      onScreen(localized).title + ' ' + onScreen(localized).thumb.slice(0, 60)
     );
     t(
       'lockup: only the title is replaced, not a label before it',
