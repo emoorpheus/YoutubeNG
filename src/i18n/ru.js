@@ -63,6 +63,8 @@ export default {
     '2 min': '2 мин',
     '5 min': '5 мин',
     'Off': 'Выкл.',
+    'Time': 'Время',
+    'Date + Time': 'Дата и время',
     'None': 'Нет',
     'Refresh Page': 'Обновить страницу',
     'Skip to Next Chapter': 'Следующая глава',

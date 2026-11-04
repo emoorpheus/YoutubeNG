@@ -40,6 +40,13 @@ export const thumbnailQualityModes = {
   eager: 'Fast'
 };
 
+/** Display Time in UI (watch.js): no clock, the time, or the date and time (upstream 0.8.5 b2, #203). */
+export const clockModes = {
+  off: 'Off',
+  time: 'Time',
+  datetime: 'Date + Time'
+};
+
 /**
  * Black screen over a paused video (pause-screensaver.js): seconds without
  * input before it appears. Number keys sort first, so 'off' ends the cycle.
@@ -141,7 +148,12 @@ const configOptions = new Map([
   ['hideEndcards', { default: false, desc: 'Hide Endcards' }],
   ['enableAutoLogin', { default: true, desc: 'Bypass Nag Screens' }],
   ['logoStyle', { default: 'default', desc: 'YouTube Logo' }],
-  ['showWatch', { default: false, desc: 'Display Time in UI' }],
+  ['showWatch', {
+    default: 'off',
+    desc: 'Display Time in UI',
+    // Up to pre-release04 a checkbox: true was the time alone.
+    upgrade: (value) => (value === true ? 'time' : value === false ? 'off' : value)
+  }],
   ['enableOledCareMode', { default: false, desc: 'OLED-Care Mode (True Black UI)' }],
   ['pauseScreensaver', { default: '60', desc: 'Screensaver on pause' }],
   ['videoShelfOpacity', { default: 100, desc: 'Video shelf opacity' }],
@@ -185,7 +197,15 @@ const changeListeners = new Map();
 function loadStoredConfig() {
   const storage = window.localStorage.getItem(CONFIG_KEY);
   if (storage === null) return null;
-  try { return JSON.parse(storage); } catch { return null; }
+  let stored;
+  try { stored = JSON.parse(storage); } catch { return null; }
+  // An option's `upgrade` turns a value an older build stored into today's form.
+  if (stored && typeof stored === 'object') {
+    for (const [key, option] of configOptions) {
+      if (option.upgrade && key in stored) stored[key] = option.upgrade(stored[key]);
+    }
+  }
+  return stored;
 }
 
 // MUTATE IN PLACE ONLY — adblock.js (and other modules) hold a module-level

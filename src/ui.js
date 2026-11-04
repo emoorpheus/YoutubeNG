@@ -1,6 +1,6 @@
 /*global navigate*/
 import './spatial-navigation-polyfill.js';
-import { logoStyles, pauseScreensaverDelays, thumbnailQualityModes, videoCodecModes } from './config.js';
+import { clockModes, logoStyles, pauseScreensaverDelays, thumbnailQualityModes, videoCodecModes } from './config.js';
 import { configAddChangeListener, configRemoveChangeListener, configRead, configWrite, configGetDesc, segmentTypes, configGetDefault, shortcutActions, sbModes, sbModesHighlight, forcePreviewModes } from './config.js';
 import './ui.css';
 import './auto-login.js';
@@ -610,7 +610,7 @@ function createOptionsPanel() {
   createVideoCodecControl(),
   createConfigCheckbox('hideEndcards'),
   createConfigCheckbox('enableReturnYouTubeDislike')]));
-  pageMain.appendChild(createSection('Interface', [createLanguageControl(), createConfigCheckbox('enableAutoLogin'), createConfigCheckbox('upgradeThumbnails'), createThumbnailQualityControl(), createLogoControl(), createConfigCheckbox('showWatch'), createConfigCheckbox('enableOledCareMode'), createAlignedCycleControl('pauseScreensaver', pauseScreensaverDelays), createConfigCheckbox('disableNotifications')]));
+  pageMain.appendChild(createSection('Interface', [createLanguageControl(), createConfigCheckbox('enableAutoLogin'), createConfigCheckbox('upgradeThumbnails'), createThumbnailQualityControl(), createLogoControl(), createAlignedCycleControl('showWatch', clockModes), createConfigCheckbox('enableOledCareMode'), createAlignedCycleControl('pauseScreensaver', pauseScreensaverDelays), createConfigCheckbox('disableNotifications')]));
   elmContainer.appendChild(pageMain);
 
   // --- Pages 2-4: built off the critical path ---

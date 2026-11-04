@@ -2,9 +2,40 @@ import { configRead, configAddChangeListener, configRemoveChangeListener } from 
 import { debounce } from './utils';
 import './watch.css';
 
+// Display Time in UI: the time, or the date and time ('time' / 'datetime'), in
+// the TV's language and its date order ("11/5 8:01 PM" in American English,
+// "05.11 20:01" in Russian). Modes, the Intl fallback and the minute-aligned
+// ticks are from upstream 0.8.5 b2 (#203).
+
+/**
+ * A formatter for `options` in the TV's language. A tag Intl refuses (a POSIX
+ * suffix such as "en-US@posix") throws a RangeError, which would leave no
+ * clock at all, so it falls back to the default locale.
+ */
+function createFormatter(options) {
+  try {
+    return new Intl.DateTimeFormat(navigator.language, options);
+  } catch {
+    return new Intl.DateTimeFormat(undefined, options);
+  }
+}
+
+/**
+ * The clock's text for `mode`, as a function of a Date. The date is its own
+ * short format joined to the time by a space: formatted together, most
+ * languages put a comma between them ("11/5, 8:01 PM").
+ */
+function createClockText(mode) {
+  const time = createFormatter({ hour: 'numeric', minute: 'numeric' });
+  if (mode !== 'datetime') return (now) => time.format(now);
+  const date = createFormatter({ month: 'numeric', day: 'numeric' });
+  return (now) => date.format(now) + ' ' + time.format(now);
+}
+
 class Watch {
-  constructor() {
+  constructor(mode) {
     // Standard properties
+    this.mode = mode;
     this._watch = null;
     this._timer = null;
     this._globalListeners = [];
@@ -53,29 +84,29 @@ class Watch {
   }
 
   startClock() {
-    const nextSeg = (60 - new Date().getSeconds()) * 1000;
-
     // Intl is supported in Chrome 24+, safe for webOS 3
-    const formatter = new Intl.DateTimeFormat(navigator.language, {
-      hour: 'numeric',
-      minute: 'numeric'
-    });
+    const clockText = createClockText(this.mode);
 
     const setTime = () => {
       if (this._watch) {
         // textContent is faster than innerText
-        this._watch.textContent = formatter.format(new Date());
+        this._watch.textContent = clockText(new Date());
         
         // Safety check on the minute mark
         this.updateVisibility();
       }
     };
 
-    setTime();
-    setTimeout(() => {
+    // Every tick is aimed at the next whole minute, so one that ran late
+    // (timers held back in the background) does not shift the ones after it.
+    const tick = () => {
       setTime();
-      this._timer = setInterval(setTime, 60000);
-    }, nextSeg);
+      this._timer = setTimeout(tick, 60000 - (Date.now() % 60000));
+    };
+    tick();
+    // Back in the foreground the time may be stale until the next tick.
+    this.onVisibility = () => { if (!document.hidden) setTime(); };
+    document.addEventListener('visibilitychange', this.onVisibility);
   }
 
   updateVisibility() {
@@ -132,9 +163,10 @@ class Watch {
 
   destroy() {
     if (this._timer) {
-      clearInterval(this._timer);
+      clearTimeout(this._timer);
       this._timer = null;
     }
+    document.removeEventListener('visibilitychange', this.onVisibility);
     
     // Note: Debounce internal timer is managed by closure in shared helper, 
     // so strictly speaking we can't cancel it externally easily unless debounce returns a cancel method.
@@ -162,19 +194,18 @@ class Watch {
 
 let watchInstance = null;
 
-function toggleWatch(show) {
-  if (show) {
-    if (!watchInstance) {
-      watchInstance = new Watch();
-    }
-  } else if (watchInstance) {
-      watchInstance.destroy();
-      watchInstance = null;
-    }
+/** Creates, rebuilds or removes the clock for 'off', 'time' or 'datetime'. */
+function setClockMode(mode) {
+  const show = mode === 'time' || mode === 'datetime';
+  if (watchInstance && (!show || watchInstance.mode !== mode)) {
+    watchInstance.destroy();
+    watchInstance = null;
+  }
+  if (show && !watchInstance) watchInstance = new Watch(mode);
 }
 
-toggleWatch(configRead('showWatch'));
+setClockMode(configRead('showWatch'));
 
 configAddChangeListener('showWatch', (evt) => {
-  toggleWatch(evt.detail.newValue);
+  setClockMode(evt.detail.newValue);
 });
