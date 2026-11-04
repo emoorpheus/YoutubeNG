@@ -94,17 +94,35 @@ const cfgFlags = {
   upgradeThumbnails: false
 };
 
-function recomputeFilterFlags() {
-  cfgEmojiFixEffective = !!cfgSnapshot[CONFIG_KEYS.EMOJI_FIX] && cachedWebOSVersion <= 4;
-  cfgNeedsContentFiltering = !!(cfgSnapshot[CONFIG_KEYS.ADBLOCK] || cfgSnapshot[CONFIG_KEYS.GUEST_PROMPTS] || cfgEmojiFixEffective);
+/**
+ * Tracking Block wanted: it is Ad Blocking's own (see recomputeFilterFlags), so
+ * only with Ad Blocking on. Decides the network hooks (syncTrackingBlock).
+ */
+function trackingBlockWanted() {
+  return !!(cfgSnapshot[CONFIG_KEYS.ADBLOCK] && cfgSnapshot[CONFIG_KEYS.TRACKING]);
+}
 
-  cfgFlags.enableAdBlock = !!cfgSnapshot[CONFIG_KEYS.ADBLOCK];
-  cfgFlags.enableTrackingBlock = !!cfgSnapshot[CONFIG_KEYS.TRACKING];
-  cfgFlags.removeGlobalShorts = !!cfgSnapshot[CONFIG_KEYS.SHORTS];
-  cfgFlags.removeLiveVideos = !!cfgSnapshot[CONFIG_KEYS.LIVE];
-  cfgFlags.removeTopLiveGames = !!cfgSnapshot[CONFIG_KEYS.LIVE_GAMES];
-  cfgFlags.removeMostRelevant = !!cfgSnapshot[CONFIG_KEYS.MOST_RELEVANT];
-  cfgFlags.hideGuestPrompts = !!cfgSnapshot[CONFIG_KEYS.GUEST_PROMPTS];
+/** Installs or removes the telemetry network hooks to match the settings. */
+export function syncTrackingBlock() {
+  if (trackingBlockWanted()) initTrackingBlock();
+  else destroyTrackingBlock();
+}
+
+function recomputeFilterFlags() {
+  const adBlock = !!cfgSnapshot[CONFIG_KEYS.ADBLOCK];
+  cfgEmojiFixEffective = !!cfgSnapshot[CONFIG_KEYS.EMOJI_FIX] && cachedWebOSVersion <= 4;
+  cfgNeedsContentFiltering = adBlock || cfgEmojiFixEffective;
+
+  cfgFlags.enableAdBlock = adBlock;
+  // Tracking Block, the Shorts, Live, Top live games and Most relevant filters
+  // and the guest-prompt filter are Ad Blocking's own: the panel greys them out
+  // while Ad Blocking is off, so they do nothing then (upstream 0.8.5 b2).
+  cfgFlags.enableTrackingBlock = trackingBlockWanted();
+  cfgFlags.removeGlobalShorts = adBlock && !!cfgSnapshot[CONFIG_KEYS.SHORTS];
+  cfgFlags.removeLiveVideos = adBlock && !!cfgSnapshot[CONFIG_KEYS.LIVE];
+  cfgFlags.removeTopLiveGames = adBlock && !!cfgSnapshot[CONFIG_KEYS.LIVE_GAMES];
+  cfgFlags.removeMostRelevant = adBlock && !!cfgSnapshot[CONFIG_KEYS.MOST_RELEVANT];
+  cfgFlags.hideGuestPrompts = adBlock && !!cfgSnapshot[CONFIG_KEYS.GUEST_PROMPTS];
   cfgFlags.enableLegacyEmojiFix = cfgEmojiFixEffective;
   cfgFlags.hideEndcards = !!cfgSnapshot[CONFIG_KEYS.ENDCARDS];
   cfgFlags.upgradeThumbnails = !!cfgSnapshot[CONFIG_KEYS.THUMBNAILS];
@@ -990,14 +1008,13 @@ function findObjects(haystack, needlesArray, maxDepth = 10) {
  * Is the JSON.parse hook needed at all?
  *
  * It carries two independent things: the response filters (ads, Shorts, guest
- * prompts, endcards, trackingParams) and the legacy emoji rewrite. Ad Blocking
+ * prompts and trackingParams with Ad Blocking; endcards) and the legacy emoji rewrite. Ad Blocking
  * being off must not take the emoji fix down with it - on webOS 3 and 4 that is
  * what stops titles rendering as tofu boxes, and it has its own setting.
  */
 export function parseHookRequired() {
   return !!(
     cfgSnapshot[CONFIG_KEYS.ADBLOCK] ||
-    cfgSnapshot[CONFIG_KEYS.GUEST_PROMPTS] ||
     cfgSnapshot[CONFIG_KEYS.ENDCARDS] ||
     cfgEmojiFixEffective ||
     thumbnailHookRequired()
@@ -1031,7 +1048,7 @@ export function destroyAdblock() {
 
 initAdblock();
 
-if (cfgSnapshot[CONFIG_KEYS.TRACKING]) {
+if (trackingBlockWanted()) {
   try {
     initTrackingBlock();
   } catch (e) {

@@ -10,7 +10,7 @@ import { initLogoStyle } from './logo-style.js';
 import { initPlaybackSpeed, stepSpeed, resetSpeed } from './playback-speed.js';
 import sponsorBlockUI from './Sponsorblock-UI.js';
 import { sendKey, REMOTE_KEYS, COLOR_CODE_MAP, isGuestMode, isWatchPage, isShortsPage, isSearchPage, SELECTORS, getVideo } from './utils.js';
-import { syncAdblockHook, initTrackingBlock, destroyTrackingBlock } from './adblock.js';
+import { syncAdblockHook, syncTrackingBlock } from './adblock.js';
 import { getWebOSVersion } from './webos-utils.js';
 import { t, uiLanguage, uiLanguages } from './i18n/index.js';
 import { showNotification as _showNotification, setNotificationOled, setNotificationTheme } from './notifications.js';
@@ -1517,11 +1517,6 @@ configAddChangeListener('enableAdBlock', () => {
   // Tracking Block is gated on Ad Blocking, so its network hooks follow too.
   syncTrackingBlock();
 });
-
-function syncTrackingBlock() {
-  if (configRead('enableTrackingBlock')) initTrackingBlock();
-  else destroyTrackingBlock();
-}
 
 configAddChangeListener('enableTrackingBlock', syncTrackingBlock);
 
