@@ -1,20 +1,14 @@
 #!/usr/bin/env node
-// npm run package:all -> two installers in dist/:
-//   <id>_<version>_all.ipk          any webOS (3.x and newer), with polyfills
-//   <id>_<version>_all_webOS22+.ipk webOS 22 and newer (Chrome 87+), smaller and faster
-// Same split and naming as upstream youtube-webos releases. <version> is the one in
-// package.json, pre-release label included (1.0.0-pre-release02); ares-package names the
-// file after appinfo.json, which holds the numbers only.
+// npm run package:all -> the two installers in dist/ named in tools/ipk-name.cjs.
 
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const names = require('./ipk-name.cjs');
 
-const { id, version } = JSON.parse(fs.readFileSync(path.join('assets', 'appinfo.json'), 'utf8'));
-const label = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
-const built = path.join('dist', `${id}_${version}_all.ipk`);
-const ipk = path.join('dist', `${id}_${label}_all.ipk`);
-const modern = path.join('dist', `${id}_${label}_all_webOS22+.ipk`);
+const built = path.join('dist', names.aresOutput);
+const ipk = path.join('dist', names.legacy);
+const modern = path.join('dist', names.modern);
 const run = (cmd) => execSync(cmd, { stdio: 'inherit' });
 
 run('npm run build:modern');

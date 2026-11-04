@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Homebrew Channel manifest for dist/<id>_<version>_all.ipk.
+// Homebrew Channel manifest for the any-webOS installer named in tools/ipk-name.cjs.
 // iconUri / sourceUrl are added only when package.json has a GitHub "homepage".
 
 const crypto = require('crypto');
@@ -8,7 +8,7 @@ const path = require('path');
 
 const appinfo = require('../assets/appinfo.json');
 const pkg = require('../package.json');
-const ipkfile = `${appinfo.id}_${pkg.version}_all.ipk`; // named by tools/package-all.cjs
+const ipkfile = require('./ipk-name.cjs').legacy;
 const outfile = process.argv[2] || path.join('dist', `${appinfo.id}.manifest.json`);
 const ipkhash = crypto
   .createHash('sha256')
