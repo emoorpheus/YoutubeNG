@@ -4,6 +4,7 @@
 
 A separate YouTube app for LG webOS TVs: no ads, SponsorBlock, Return YouTube Dislike, playback speed, true-black OLED mode, and settings in English or Russian.
 
+- **NG** stands for **new-gen**, the Next-Gen in the name: hence the app ID `youtube.nextgen` and the `ng/` branches.
 - App ID `youtube.nextgen`. It installs next to the official YouTube app and replaces nothing.
 - Settings: in YouTube open the menu on the left → **Settings** → **YouTube Next-Gen** (the first item) → **Open settings**. If your remote has colour buttons, the **green** one opens them straight away. **Back** closes them.
 
@@ -80,7 +81,12 @@ npm run package:all
 
 ## For developers
 
-[AGENTS.md](AGENTS.md) (also read by Claude Code through [CLAUDE.md](CLAUDE.md)) has the layout, commands and rules; [docs/upstream.md](docs/upstream.md) lists what is ported from youtube-webos 0.8.5.
+This project is built with AI: the code, tests and documentation are written with AI coding agents (Claude Code, Codex) and checked by builds, tests and runs on a real TV. The instructions the agents work by are in the repository:
+
+- [AGENTS.md](AGENTS.md): layout, commands and rules, for any agent (and people).
+- [CLAUDE.md](CLAUDE.md): the entry for Claude Code; it loads `AGENTS.md` and adds a few notes.
+
+[docs/upstream.md](docs/upstream.md) lists what is ported from youtube-webos 0.8.5.
 
 ## Licence
 

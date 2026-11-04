@@ -23,6 +23,8 @@ const doc = win.document;
 const video = doc.querySelector('video');
 let paused = true;
 Object.defineProperty(video, 'paused', { configurable: true, get: () => paused });
+let time = 0;
+Object.defineProperty(video, 'currentTime', { configurable: true, get: () => time, set: (v) => { time = v; } });
 const player = doc.getElementById('ytlr-player__player-container-player');
 const playerCalls = [];
 player.pauseVideo = () => { playerCalls.push('pauseVideo'); paused = true; };
@@ -98,6 +100,25 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('app to the background pauses through the player', calls === callsBefore + 1 && playerCalls[calls - 1] === 'pauseVideo' && paused, playerCalls);
   hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
   t('coming back does not resume', playerCalls.length === calls && paused, playerCalls);
+  // T8 (pre-release03): YouTube unloads the video right after hiding (time 0,
+  // no pause event) and on return loads it again and starts it by itself.
+  paused = false; time = 596.5; media('play');
+  hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
+  paused = true; time = 0;
+  const callsHidden = playerCalls.length;
+  hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
+  t('unloaded in the background: nothing yet on return', playerCalls.length === callsHidden, playerCalls);
+  paused = false; time = 596.5; media('play'); media('playing');
+  t("YouTube's own restart is paused once", playerCalls.length === callsHidden + 1 && playerCalls[playerCalls.length - 1] === 'pauseVideo' && paused, playerCalls);
+  player.playVideo(); media('playing');
+  t('Play after that plays', !paused && playerCalls[playerCalls.length - 1] === 'playVideo', playerCalls);
+  // Back while it already plays again: paused at once, Play then works.
+  hidden = true; doc.dispatchEvent(new win.Event('visibilitychange'));
+  paused = false; time = 3;
+  hidden = false; doc.dispatchEvent(new win.Event('visibilitychange'));
+  t('playing again on return: paused at once', paused && playerCalls[playerCalls.length - 1] === 'pauseVideo', playerCalls);
+  player.playVideo(); media('playing');
+  t('and Play then plays', !paused, playerCalls);
   done();
 })();
 function done() { console.log(pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0); }

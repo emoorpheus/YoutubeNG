@@ -2,6 +2,13 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
+## 1.0.0 pre-release04
+
+Fixes from the pre-release03 test on an LG OLED65M5 (webOS 25).
+
+- Back from Home or another app the video waits paused, also when YouTube unloads it in the background. YouTube drops the video right after the app is hidden and on return loads it again, at the same spot and speed, and starts it; that restart is now paused once. Play continues.
+- Docs: what NG stands for (new-gen); the project is built with AI coding agents, their instructions are in `AGENTS.md` and `CLAUDE.md`.
+
 ## 1.0.0 pre-release03
 
 Fixes from the pre-release02 test on an LG OLED65M5 (webOS 25).

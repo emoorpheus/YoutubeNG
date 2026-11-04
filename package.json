@@ -1,6 +1,6 @@
 {
   "name": "youtube-next-gen",
-  "version": "1.0.0-pre-release03",
+  "version": "1.0.0-pre-release04",
   "description": "YouTube Next-Gen for LG webOS TV",
   "type": "module",
   "main": "index.js",

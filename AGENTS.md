@@ -4,7 +4,7 @@ Guide for coding agents (Codex, Claude Code, Cursor and others) working on this 
 
 ## What this is
 
-YouTube Next-Gen: a YouTube app for LG webOS TVs, a fork of [youtube-webos](https://github.com/NicholasBly/youtube-webos). The app opens `youtube.com/tv` and injects `dist/webOSUserScripts/userScript.js`, which adds ad blocking, SponsorBlock, Return YouTube Dislike, playback speed, OLED mode and its own settings panel. App ID `youtube.nextgen` (`assets/appinfo.json`). GPL-3.0-only.
+YouTube Next-Gen (NG, short for new-gen): a YouTube app for LG webOS TVs, a fork of [youtube-webos](https://github.com/NicholasBly/youtube-webos). The app opens `youtube.com/tv` and injects `dist/webOSUserScripts/userScript.js`, which adds ad blocking, SponsorBlock, Return YouTube Dislike, playback speed, OLED mode and its own settings panel. App ID `youtube.nextgen` (`assets/appinfo.json`). GPL-3.0-only.
 
 ## Layout
 
