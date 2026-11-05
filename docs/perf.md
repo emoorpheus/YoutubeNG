@@ -20,6 +20,7 @@ Keep the old bundles before a change: `cp dist/webOSUserScripts/userScript.js /t
 | terser `passes: 2` (b2) | not tried: ours is 4, and b2 measured passes past two at some 50 bytes | | |
 | terser `reduce_funcs: false` (b2: a single-use helper inlined into a loop became a closure per item on Chromium 38) | 355,156 B (105,881) / 300,331 B (90,924): +864 B / +615 B | response hook (default settings), webOS 3 build, 150 KB browse, 3 runs each: overhead 1.52 → 1.50 ms; `node --jitless`, 2 runs each: 3.12 → 3.08 ms (−1.4 %, inside the spread) | no; node is not Chromium 38, worth a try on a webOS 3 TV |
 | Emoji walk (webOS 3 and 4): no text-field check on arrays, which JSON.parse never gives one | 354,292 B (105,853) / 299,717 B (90,479): ±0 | response hook (default settings), webOS 3 build, 150 KB browse, 4 runs each: overhead 1.52 → 1.40 ms (−8 %, 4 of 4); `node --jitless`, 2 runs each: 3.18 → 2.87 ms (−10 %) | yes |
+| Tracking strip: no `trackingParams` check on arrays either | ±0 | response hook (every filter), 150 KB browse, medians of 4 runs: webOS 3 1.51 → 1.52 ms, webOS 22+ 0.21 → 0.20 ms, both inside the spread | no |
 
 From the `<style>` row on, `run` also counts the microtasks the top level queued: the one `<style>` is written in one.
 
