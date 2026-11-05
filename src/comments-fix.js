@@ -42,25 +42,44 @@ let styleEl = null;
 let foundRules = false;
 let scans = 0;
 
-function collectRules() {
+// Sheets already looked through, with their rule count then. YouTube's
+// sheets (about 3,700 rules on a TV) come whole; one whose count has not
+// changed has nothing new, so the startup retries skip it instead of reading
+// every rule again each second. The focus scans still read them all.
+const looked = new WeakMap();
+
+function usesCloseClass(sel) {
+  for (let j = 0; j < CLOSE_CLASSES.length; j++) {
+    if (sel.indexOf('.' + CLOSE_CLASSES[j]) !== -1) return true;
+  }
+  return false;
+}
+
+// Rules naming a closing class.
+function collectRules(skipLooked) {
   const res = [];
   const walk = (list) => {
     if (!list) return;
     for (let i = 0; i < list.length; i++) {
       const r = list[i];
-      if (r.selectorText) res.push(r);
+      const sel = r.selectorText;
+      if (sel) { if (usesCloseClass(sel)) res.push(r); }
       else if (r.cssRules) walk(r.cssRules); // @media / @supports
     }
   };
+  const look = (sheet) => {
+    try {
+      const list = sheet.cssRules;
+      if (skipLooked && list && looked.get(sheet) === list.length) return;
+      walk(list);
+      if (list) looked.set(sheet, list.length);
+    } catch { /* cross-origin sheet */ }
+  };
   const sheets = document.styleSheets;
-  for (let i = 0; i < sheets.length; i++) {
-    try { walk(sheets[i].cssRules); } catch { /* cross-origin sheet */ }
-  }
+  for (let i = 0; i < sheets.length; i++) look(sheets[i]);
   const adopted = document.adoptedStyleSheets;
   if (adopted) {
-    for (let i = 0; i < adopted.length; i++) {
-      try { walk(adopted[i].cssRules); } catch { /* ignore */ }
-    }
+    for (let i = 0; i < adopted.length; i++) look(adopted[i]);
   }
   return res;
 }
@@ -69,21 +88,20 @@ function isZero(v) {
   return v === '0' || v === '0px' || v === '0rem';
 }
 
-function findCollapsingSelectors() {
-  const rules = collectRules();
+function findCollapsingSelectors(skipLooked) {
+  const rules = collectRules(skipLooked);
   const sels = [];
   for (let i = 0; i < rules.length; i++) {
     const r = rules[i];
-    const sel = r.selectorText;
-    let usesCloseClass = false;
-    for (let j = 0; j < CLOSE_CLASSES.length; j++) {
-      if (sel.indexOf('.' + CLOSE_CLASSES[j]) !== -1) { usesCloseClass = true; break; }
-    }
-    if (!usesCloseClass) continue;
     const s = r.style;
-    if (s.display === 'none' || isZero(s.height) || isZero(s.width) || isZero(s.maxHeight)) sels.push(sel);
+    if (s.display === 'none' || isZero(s.height) || isZero(s.width) || isZero(s.maxHeight)) sels.push(r.selectorText);
   }
   return sels;
+}
+
+// Writing the same text again would still replace the sheet.
+function write(css) {
+  if (styleEl.textContent !== css) styleEl.textContent = css;
 }
 
 function applyFix(fromStartup) {
@@ -93,7 +111,7 @@ function applyFix(fromStartup) {
     scans++;
   }
 
-  const sels = findCollapsingSelectors();
+  const sels = findCollapsingSelectors(fromStartup);
   if (!styleEl) {
     styleEl = document.createElement('style');
     styleEl.id = 'ytng-comments-close-fix';
@@ -102,13 +120,13 @@ function applyFix(fromStartup) {
 
   if (sels.length) {
     foundRules = true;
-    styleEl.textContent = sels.map((s) =>
+    write(sels.map((s) =>
       s + ' { display: block !important; height: auto !important; width: auto !important;' +
       ' max-height: none !important; visibility: hidden !important; }'
-    ).join('\n');
+    ).join('\n'));
     console.info('[CommentsFix] Close-collapse override applied to: ' + sels.join(' , '));
   } else {
-    styleEl.textContent = FALLBACK_CSS;
+    write(FALLBACK_CSS);
     if (!fromStartup) console.info('[CommentsFix] No collapsing close rule found (scan ' + scans + '/' + MAX_SCANS + '), using fallback');
   }
 }
