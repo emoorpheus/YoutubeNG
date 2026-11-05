@@ -214,13 +214,19 @@ function splitIntoRuns(text, originalRun = {}) {
     
     for (let i = 0; i < parts.length; i++) {
         if (!parts[i]) continue;
-        if (i % 2 === 1) { 
-            newRuns.push(Object.assign({}, originalRun, { text: '\u200B' + parts[i] + '\u200C' }));
-        } else {
-            newRuns.push(Object.assign({}, originalRun, { text: parts[i] }));
-        }
+        newRuns.push(copyRun(originalRun, i % 2 === 1 ? '\u200B' + parts[i] + '\u200C' : parts[i]));
     }
     return newRuns;
+}
+
+// Object.assign({}, run, { text }) without the second object: webOS 3 has no
+// Object.assign, and the one in polyfills.js builds a key array per source.
+// for-in sees the same keys as Object.keys on JSON.parse output.
+function copyRun(run, text) {
+    const out = {};
+    for (const k in run) out[k] = run[k];
+    out.text = text;
+    return out;
 }
 
 // Non-recursive: the emoji/text fields of a single node, in place.
