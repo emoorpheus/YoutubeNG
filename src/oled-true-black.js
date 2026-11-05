@@ -52,7 +52,10 @@ const BACKDROP_IMAGE = /gstatic\.com\/ytlr\/img\/[^)]*gradient/i;
 
 let enabled = false;
 let observer = null;
-const swept = [];   // stylesheets already processed while enabled
+// Stylesheets already processed while enabled. Weakly: a rewritten <style>
+// (SponsorBlock's labels, every video) gets a new sheet, and the old one
+// must be free to go.
+let swept = new WeakSet();
 const patched = []; // { style, prop, value, priority } - originals, for restore
 
 function patch(style, prop, value, priority = 'important') {
@@ -92,11 +95,11 @@ function sweepRules(rules) {
 }
 
 function sweepSheet(sheet) {
-  if (!sheet || swept.indexOf(sheet) !== -1) return;
+  if (!sheet || swept.has(sheet)) return;
   let rules;
   try { rules = sheet.cssRules; } catch { return; } // cross-origin sheet
   if (!rules) return;
-  swept.push(sheet);
+  swept.add(sheet);
   sweepRules(rules);
 }
 
@@ -138,7 +141,7 @@ function setTrueBlack(on) {
     if (p.value) p.style.setProperty(p.prop, p.value, p.priority);
     else p.style.removeProperty(p.prop);
   }
-  swept.length = 0;
+  swept = new WeakSet();
 }
 
 setTrueBlack(configRead('enableOledCareMode'));

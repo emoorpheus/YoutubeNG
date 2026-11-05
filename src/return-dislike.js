@@ -1,6 +1,7 @@
 import { t } from './i18n/index.js';
 import { configRead, configAddChangeListener } from './config.js';
 import { SYNTHETIC_KEY_FLAG } from './utils.js';
+import './return-dislike.css';
 
 // Global cache for API responses
 const dislikeCache = new Map();
@@ -66,6 +67,8 @@ class ReturnYouTubeDislike {
     this.dislikesValue = null;
     this.dislikeValueElement = null;
     this.dislikeFactoidElement = null;
+    // The stats row marked .ryd-ready, which return-dislike.css lays out.
+    this.readyContainer = null;
     this.fetchAttempts = 0;
     this.dataReady = !enableDislikes;
     
@@ -134,7 +137,6 @@ class ReturnYouTubeDislike {
   async init() {
     this.log('info', 'Initializing...');
     try {
-      this.injectPersistentStyles();
       this.setupNavigation();
 
       // Panel detection must not sit behind the network: a cold first request
@@ -744,6 +746,7 @@ class ReturnYouTubeDislike {
 
       likesElement.insertAdjacentElement('afterend', dislikeElement);
       container.classList.add('ryd-ready');
+      this.readyContainer = container;
       this.initialInjectionDone = true;
       this.compensateHeaderGrowth(container);
 
@@ -759,22 +762,6 @@ class ReturnYouTubeDislike {
     return num.toString();
   }
   
-  injectPersistentStyles() {
-    if (document.getElementById('ryd-persistent-styles')) return;
-    const styleElement = document.createElement('style');
-    styleElement.id = 'ryd-persistent-styles';
-    styleElement.textContent = `
-      ${SELECTORS.panel} ${SELECTORS.standardContainer}.ryd-ready, ${SELECTORS.panel} ${SELECTORS.compactContainer}.ryd-ready {
-        display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 1.0rem !important; height: auto !important; overflow: visible !important;
-      }
-      ${SELECTORS.panel} .ryd-ready div[idomkey="factoid-2"] { margin-top: 0 !important; }
-      ${SELECTORS.panel} .ryd-ready div[idomkey="factoid-2"] ${SELECTORS.stdValue}, ${SELECTORS.panel} .ryd-ready div[idomkey="factoid-2"] ${SELECTORS.cptValue} { display: inline-block !important; margin-right: 0.2rem !important; }
-      ${SELECTORS.panel} .ryd-ready div[idomkey="factoid-2"] ${SELECTORS.stdLabel}, ${SELECTORS.panel} .ryd-ready div[idomkey="factoid-2"] ${SELECTORS.cptLabel} { display: inline-block !important; }
-      #ryd-dislike-factoid { flex: 0 0 auto !important; }
-    `;
-    document.head.appendChild(styleElement);
-  }
-
   destroy() {
     this.log('info', 'Destroying...');
     this.active = false;
@@ -797,9 +784,9 @@ class ReturnYouTubeDislike {
     const el = document.getElementById('ryd-dislike-factoid');
     if (el) el.remove();
     this.clearHeaderShift();
-    if (window.returnYouTubeDislike === this) {
-        const styles = document.getElementById('ryd-persistent-styles');
-        if (styles) styles.remove();
+    if (this.readyContainer) {
+        this.readyContainer.classList.remove('ryd-ready');
+        this.readyContainer = null;
     }
     
     // Cleanup references

@@ -1,0 +1,25 @@
+/* Return YouTube Dislike: the description panel's stats row with the dislike
+   count put in. RYD marks the row .ryd-ready while it has the count in and
+   unmarks it when it lets go, so on any other row or page these rules match
+   nothing. (They were a <style> added with every video and removed after it:
+   each time the TV restyled the page.) */
+ytlr-structured-description-content-renderer .ytLrVideoDescriptionHeaderRendererFactoidContainer.ryd-ready,
+ytlr-structured-description-content-renderer .rznqCe.ryd-ready {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 1.0rem !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+ytlr-structured-description-content-renderer .ryd-ready div[idomkey="factoid-2"] { margin-top: 0 !important; }
+ytlr-structured-description-content-renderer .ryd-ready div[idomkey="factoid-2"] .ytLrVideoDescriptionHeaderRendererValue,
+ytlr-structured-description-content-renderer .ryd-ready div[idomkey="factoid-2"] .axf6h {
+  display: inline-block !important;
+  margin-right: 0.2rem !important;
+}
+ytlr-structured-description-content-renderer .ryd-ready div[idomkey="factoid-2"] .ytLrVideoDescriptionHeaderRendererLabel,
+ytlr-structured-description-content-renderer .ryd-ready div[idomkey="factoid-2"] .Ph2lNb {
+  display: inline-block !important;
+}
+#ryd-dislike-factoid { flex: 0 0 auto !important; }
