@@ -991,6 +991,20 @@ function shown(win, id) {
     );
   }
   if (modern) {
+    // Remove emojis and fancy text (on by default): the formatter maps the
+    // letters through its fancy-text table, built on first use.
+    const fancy = '\u{1D413}\u{1D407}\u{1D404} \u{1D401}\u{1D404}\u{1D412}\u{1D413} \u{1D406}\u{1D40F}\u{1D414}';
+    const p = boot({ dearrowTitleFormatting: 'title_case' });
+    await wait(50);
+    render(p.win, p.win.JSON.parse(response([tile('norandom001', fancy)])));
+    await waitFor(() => shown(p.win, 'norandom001').title !== fancy, 2000);
+    t(
+      'Fancy text: mathematical bold letters read as plain ones, then Title Case',
+      shown(p.win, 'norandom001').title === 'The Best Gpu',
+      shown(p.win, 'norandom001').title
+    );
+  }
+  if (modern) {
     const p = boot({ dearrowTitleFormatting: 'title_case' });
     await wait(50);
     render(p.win, p.win.JSON.parse(response([tile('custom00001', 'Clickbait')])));

@@ -9,7 +9,8 @@
  */
 // [ytaf] File extensions on the imports: an ES module package resolves them as written.
 import Config, { TitleFormatting, getTitleFormatting, shouldCleanEmojis, chromeP, uRegExp } from "./shim.js";
-import { acronymBlocklist, allowlistedStartOfWords, allowlistedWords, fancyTextConversions, notStartOfSentence, titleCaseNotCapitalized } from "./titleFormatterData.js";
+// [ytaf] getFancyTextConversions(): the table is built on first use.
+import { acronymBlocklist, allowlistedStartOfWords, allowlistedWords, getFancyTextConversions, notStartOfSentence, titleCaseNotCapitalized } from "./titleFormatterData.js";
 
 
 
@@ -651,6 +652,7 @@ export function cleanEmojis(title) {
 
 export function cleanFancyText(title) {
   const replacementsNeeded = new Set();
+  const fancyTextConversions = getFancyTextConversions(); // [ytaf]
   for (const character of title) {
     const match = fancyTextConversions.get(character);
     if (match) {

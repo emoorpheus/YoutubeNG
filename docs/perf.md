@@ -22,6 +22,7 @@ Keep the old bundles before a change: `cp dist/webOSUserScripts/userScript.js /t
 | Emoji walk (webOS 3 and 4): no text-field check on arrays, which JSON.parse never gives one | 354,292 B (105,853) / 299,717 B (90,479): ±0 | response hook (default settings), webOS 3 build, 150 KB browse, 4 runs each: overhead 1.52 → 1.40 ms (−8 %, 4 of 4); `node --jitless`, 2 runs each: 3.18 → 2.87 ms (−10 %) | yes |
 | Tracking strip: no `trackingParams` check on arrays either | ±0 | response hook (every filter), 150 KB browse, medians of 4 runs: webOS 3 1.51 → 1.52 ms, webOS 22+ 0.21 → 0.20 ms, both inside the spread | no |
 | Emoji walk: a split run copied by for-in, not `Object.assign({}, run, { text })` (webOS 3 has no `Object.assign`; the polyfill builds a key array per source) | 354,303 B (105,835) / 299,732 B (90,482): +11 B / +15 B | response hook (default settings), webOS 3 build, 825 KB browse with an emoji in every title, 4 runs each: overhead 11.28 → 9.08 ms (−19 %, 4 of 4); `node --jitless`, 2 runs each: 22.7 → 19.6 ms (−14 %); 819 KB without emoji, 2 runs each: 7.75 → 7.22 ms | yes |
+| DeArrow's fancy-text table (1,361 pairs, `new Map(JSON.parse(…))`) built on first use, not at start-up: only Remove emojis and fancy text reads it; webOS 22+ build only | 354,303 B (105,835) / 299,780 B (90,512): ±0 / +48 B | webOS 22+: compile −0.02 ms (58), run −0.44 ms of 6.08 (92) | yes |
 
 From the `<style>` row on, `run` also counts the microtasks the top level queued: the one `<style>` is written in one.
 
