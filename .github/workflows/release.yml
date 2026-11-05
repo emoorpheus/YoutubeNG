@@ -26,6 +26,13 @@ jobs:
       - run: npm run package:all
       - run: npm run manifest
 
+      # The tag's section of CHANGELOG.md (fails if there is none) and the
+      # installers' checksums.
+      - name: Release notes and checksums
+        run: |
+          node tools/release-notes.cjs "$GITHUB_REF_NAME" > dist/release-notes.md
+          (cd dist && sha256sum *.ipk > SHA256SUMS)
+
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
@@ -38,4 +45,5 @@ jobs:
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
           omitPrereleaseDuringUpdate: true
-          artifacts: 'dist/*.ipk,dist/*.manifest.json'
+          bodyFile: dist/release-notes.md
+          artifacts: 'dist/*.ipk,dist/*.manifest.json,dist/SHA256SUMS'

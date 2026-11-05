@@ -1,0 +1,24 @@
+name: Idea
+description: Something the app could do, or do better.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: English or Russian is fine.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What the app should do, as seen from the sofa.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What it solves, and how you get by today.
+  - type: input
+    id: tv
+    attributes:
+      label: webOS version and the TV's year (optional)
+      placeholder: webOS 25, 2025

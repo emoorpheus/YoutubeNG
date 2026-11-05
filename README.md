@@ -87,7 +87,7 @@ This project is built with AI: the code, tests and documentation are written wit
 - [AGENTS.md](AGENTS.md): layout, commands and rules, for any agent (and people).
 - [CLAUDE.md](CLAUDE.md): the entry for Claude Code; it loads `AGENTS.md` and adds a few notes.
 
-[docs/upstream.md](docs/upstream.md) lists what is ported from youtube-webos 0.8.5.
+[CONTRIBUTING.md](CONTRIBUTING.md) is how to report a bug or send a change, [SECURITY.md](SECURITY.md) how to report a security problem. [docs/upstream.md](docs/upstream.md) lists what is ported from youtube-webos 0.8.5, [docs/perf.md](docs/perf.md) every optimisation with its numbers.
 
 ## Licence
 

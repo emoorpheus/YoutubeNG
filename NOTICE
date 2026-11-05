@@ -15,10 +15,21 @@ from youtube-webos 0.8.5 beta 2 (see docs/upstream.md).
 Third-party code and assets
 - src/app_api/index.ts, src/lang-settings-fix.ts and parts of
   src/auto-login.js are adapted from TizenTube by reisxd (GPL-3.0).
-- Emoji graphics are loaded at runtime from Twemoji (CC-BY 4.0).
+- src/speed/ (playback speed engine) comes from the Schmiddisen fork of
+  youtube-webos (GPL-3.0).
+- src/vendor/dearrow/ is DeArrow's title formatter by Ajay Ramachandran
+  (github.com/ajayyy/DeArrow, GPL-3.0); see src/vendor/README.md.
+- src/domrect-polyfill.js is from the Financial Times polyfill-library (MIT).
+- Bundled npm packages: whatwg-fetch (MIT), @twemoji/api (MIT),
+  tiny-sha256 (public domain), @babel/runtime helpers (MIT).
+- Emoji graphics are loaded at runtime from Twemoji (CC-BY 4.0) on webOS 4
+  and older.
 
-Online services used at runtime: SponsorBlock (sponsor.ajay.app) and
-Return YouTube Dislike (returnyoutubedislike.com).
+Online services used at runtime: SponsorBlock (sponsorblock.inf.re, with
+sponsor.ajay.app as fallback), DeArrow when turned on (sponsor.ajay.app,
+dearrow-thumb.ajay.app), Return YouTube Dislike (returnyoutubedislikeapi.com);
+in the webOS 3+ build also Google Fonts, and on webOS 4 and older Twemoji
+images (cdnjs.cloudflare.com).
 
 "YouTube" is a trademark of Google LLC. This project is not affiliated with,
 endorsed or sponsored by Google LLC or LG Electronics.

@@ -4,7 +4,7 @@
 
 Тексты самого приложения (панель настроек, уведомления, окно SponsorBlock, подсказка при первом запуске) лежат в `src/i18n/`. Интерфейс YouTube это не затрагивает: он сам берёт язык телевизора.
 
-- `src/i18n/template.js`: все английские тексты (около 170 строк). С него начинается перевод.
+- `src/i18n/template.js`: все английские тексты (около 200 строк). С него начинается перевод.
 - `src/i18n/ru.js`: русский, готовый пример.
 
 ## Добавить язык
@@ -46,7 +46,7 @@
   | `{categories}` | список категорий: `a, b и c` |
 
 - Коротко. Панель читают с дивана; по длине примерно как английский.
-- Не переводятся: YouTube, SponsorBlock, NG, OLED, названия кодеков (AV1, VP9, H.264, H.265).
+- Не переводятся: YouTube, SponsorBlock, DeArrow, NG, OLED, названия кодеков (AV1, VP9, H.264, H.265).
 - `and` — слово перед последним пунктом списка (`спонсорская реклама, вступление и концовка`).
 - `categories` пишутся строчными, как в середине фразы.
 - Кодировка UTF-8. Апостроф внутри значения пишется как `\'`.
@@ -67,8 +67,8 @@ Rules:
   {categories}) exactly as written. You may move it within the sentence.
 - Short, natural interface wording, about as long as the English. Use the
   same term for the same thing throughout.
-- Keep YouTube, SponsorBlock, NG, OLED and codec names (AV1, VP9, H.264,
-  H.265) as they are.
+- Keep YouTube, SponsorBlock, DeArrow, NG, OLED and codec names (AV1, VP9,
+  H.264, H.265) as they are.
 - `and` is the word before the last item of a list.
 - `categories` are SponsorBlock segment types, in lower case.
 - Remove every "// TODO". Write an apostrophe inside a value as \'.

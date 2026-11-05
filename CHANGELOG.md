@@ -6,10 +6,11 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 
 - Start-up screen in OLED mode: it turns black in step with the logo's move, over the same 0.45 s. YouTube's logo picture has a grey of its own round it, so the whole screen is filtered as one: the grey goes to black round the logo and in its box alike, white and red stay as they are. It is grey until the app's script is in, as before: the webOS splash is a fixed picture, and the launcher page and YouTube's own start-up screen are drawn before the setting can be read. Without OLED mode nothing changes. A filter animation, which the compositor runs like the logo's move; each build is 0.6 KB bigger.
 - Tests: `bench/start-screen-test.cjs` covers OLED mode (both builds).
+- Repository: a contributing guide, a security policy, issue and pull request templates. A release's notes are its section of this file, and it carries a `SHA256SUMS` of the installers; CI also runs `bench/run-all.sh`. The docs no longer name the test TV's model or firmware.
 
 ## 1.0.0 pre-release06
 
-Fixes from the pre-release05 test on an LG OLED65M5 (webOS 25).
+Fixes from the pre-release05 test on a webOS 25 TV.
 
 - "Who's watching?": on a TV with no account, a video opened from outside the app (a link, a cast) now plays as guest; the screen used to open Google sign-in, because OK landed on "Add account". OK is pressed only once the focus is on the guest button or on the account being resumed; if it never gets there, the screen is left to the remote. While it is skipped the screen is transparent rather than removed, so Down reaches the guest button: before, Down went nowhere and a guest on a TV with accounts was signed in to the first one. On webOS 25 a guest is recognised as one, so Guest Mode: Hide Sign-in Buttons is offered again.
 - SponsorBlock: on webOS 25 a skip takes 0.5 to 2.5 s to finish, the longer ones at 1.25×, and the check that covers a lost `seeked` event gave up on it after 1.5 s: it logged "'seeked' never fired after skip" and reset the skip while the seek was still under way. It now waits as long as the video is still seeking, up to 10 s. The skips themselves land on the segment's end, at 1× and at 1.25× alike.
@@ -32,14 +33,14 @@ Brought over from youtube-webos 0.8.5 beta 2, plus small fixes.
 
 ## 1.0.0 pre-release04
 
-Fixes from the pre-release03 test on an LG OLED65M5 (webOS 25).
+Fixes from the pre-release03 test on a webOS 25 TV.
 
 - Back from Home or another app the video waits paused, also when YouTube unloads it in the background. YouTube drops the video right after the app is hidden and on return loads it again, at the same spot and speed, and starts it; that restart is now paused once. Play continues. webOS stops the video a moment before the app is hidden, and YouTube suspends its player on hide before the app's own listener ran; both hid that it had been playing.
 - Docs: what NG stands for (new-gen); the project is built with AI coding agents, their instructions are in `AGENTS.md` and `CLAUDE.md`.
 
 ## 1.0.0 pre-release03
 
-Fixes from the pre-release02 test on an LG OLED65M5 (webOS 25).
+Fixes from the pre-release02 test on a webOS 25 TV.
 
 - Playback speed holds on 50 fps VP9 videos. Only appends that start an init segment are parsed now; media chunks go to the TV untouched. They are cut anywhere, and about 2 % of WebM ones read as an impossible element size, which dropped the speed to 1× with "Playback speed not available".
 - Back from Home or another app the video waits paused, at the same spot and speed. If the speed engine loses its audio decoder or AudioContext in the background, it is rebuilt on return; before, that counted as a failure: the speed went to 1× and the reload started the video playing. A decoder the browser reclaims is rebuilt the same way (three times a minute at most). The cause of any fall back to 1× is now in the TV console (`[Speed] …`).
@@ -50,7 +51,7 @@ Fixes from the pre-release02 test on an LG OLED65M5 (webOS 25).
 
 ## 1.0.0 pre-release02
 
-Fixes from the pre-release01 test on an LG OLED65M5 (webOS 25). On the TV this build showed version 1.1.0.
+Fixes from the pre-release01 test on a webOS 25 TV. On the TV this build showed version 1.1.0.
 
 - OLED mode covers the player: the progress bar is red with a lighter buffered part, the round buttons, pills, search box and keyboard keys are near-black #1a1a1a instead of grey #373737; focus still turns them white. Colours are swapped inside YouTube's own rules, so nothing depends on its class names.
 - Start-up screen: with OLED mode on, YouTube's grey loading screen is black with the YouTube Next-Gen logo and name; the webOS splash image is the same picture.

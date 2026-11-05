@@ -33,7 +33,7 @@ Not seen in jsdom: on webOS 22+ the polyfill also read the root element's comput
 
 ## On a TV
 
-LG OLED65M59LA, webOS 25 (firmware 33.30.97), the webOS 22+ ipk of `daa6a5c` against that of `c07dab8`. Each build reloaded six times under a DevTools trace; the injected `userScript.js` is the longest `EvaluateScript` without a URL.
+A webOS 25 TV (2025), the webOS 22+ ipk of `daa6a5c` against that of `c07dab8`. Each build reloaded six times under a DevTools trace; the injected `userScript.js` is the longest `EvaluateScript` without a URL.
 
 | | `daa6a5c` | `c07dab8` |
 |---|---|---|

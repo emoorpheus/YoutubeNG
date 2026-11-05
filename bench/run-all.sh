@@ -7,6 +7,7 @@ set -o pipefail
 FAILED=0
 trap 'FAILED=$((FAILED+1)); echo "!!! the step above FAILED"' ERR
 echo "==================== $LABEL ===================="
+echo "--- release notes from CHANGELOG.md ---"; node bench/release-notes-test.cjs 2>&1 | tail -1
 npx webpack --mode=production > /tmp/leg.log 2>&1
 E=$(grep -c "^ERROR" /tmp/leg.log || true); [ "$E" != "0" ] && { echo "LEGACY BUILD ERRORS: $E"; grep "^ERROR" /tmp/leg.log | head -5; }
 echo "--- polyfill conformance ---";  node bench/polyfill-conformance.cjs 2>&1 | tail -2

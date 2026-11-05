@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in the app does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or Russian is fine. Leave private data out, also of screenshots and logs: no IP addresses, serial numbers, account names, cookies or tokens.
+        A security problem? Do not open an issue; see SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: The settings heading shows it.
+      placeholder: 1.0.0 pre-release06
+    validations:
+      required: true
+  - type: dropdown
+    id: installer
+    attributes:
+      label: Installer
+      options:
+        - webOS 22+ (..._all_webOS22+.ipk)
+        - any webOS (..._all.ipk)
+    validations:
+      required: true
+  - type: input
+    id: tv
+    attributes:
+      label: webOS version and the TV's year
+      placeholder: webOS 25, 2025
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a video from Home
+        2. Press ...
+  - type: textarea
+    id: settings
+    attributes:
+      label: Settings changed from the defaults
+      description: For example OLED mode on, DeArrow on, SponsorBlock categories.
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output (optional)
+      description: Errors and warnings from the web inspector (`npm run inspect -- -d tv`).
+      render: text
