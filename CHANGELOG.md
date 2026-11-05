@@ -2,7 +2,9 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
-## Unreleased
+## 1.0.0 pre-release07
+
+Optimisation, security and memory work while the TV was busy; not yet checked on a TV.
 
 - Start-up screen in OLED mode: it turns black in step with the logo's move, over the same 0.45 s. YouTube's logo picture has a grey of its own round it, so the whole screen is filtered as one: the grey goes to black round the logo and in its box alike, white and red stay as they are. It is grey until the app's script is in, as before: the webOS splash is a fixed picture, and the launcher page and YouTube's own start-up screen are drawn before the setting can be read. Without OLED mode nothing changes. A filter animation, which the compositor runs like the logo's move; each build is 0.6 KB bigger.
 - Links from other apps and from casts open only YouTube's TV page. A link to another youtube.com page, a sign-out or a redirect to another site, used to open that page in the app; now only its query is kept, so a `/watch?v=...` link still opens the video. Such links come from other apps on the TV and from phones on the local network (DIAL). Each build is 0.1 KB bigger.
