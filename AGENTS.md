@@ -43,6 +43,7 @@ Bench (jsdom is not a dependency, install it without saving):
 npm i --no-save jsdom
 bash bench/run-all.sh mylabel   # builds legacy + modern and runs the suite
 node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js
+node bench/startup-bench.cjs old.js new.js legacy 100   # startup A/B, see docs/perf.md
 ```
 
 Known failures in `run-all.sh`, present before this fork: dependency telemetry (1), dislike timing (2), module behaviour (3). `bench/speed-test.cjs` and `bench/settings-speed-test.cjs` target an older speed implementation and are not in the suite.
