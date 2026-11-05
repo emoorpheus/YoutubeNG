@@ -7,7 +7,8 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 Fixes from the pre-release05 test on an LG OLED65M5 (webOS 25).
 
 - "Who's watching?": on a TV with no account, a video opened from outside the app (a link, a cast) now plays as guest; the screen used to open Google sign-in, because OK landed on "Add account". OK is pressed only once the focus is on the guest button or on the account being resumed; if it never gets there, the screen is left to the remote. While it is skipped the screen is transparent rather than removed, so Down reaches the guest button: before, Down went nowhere and a guest on a TV with accounts was signed in to the first one. On webOS 25 a guest is recognised as one, so Guest Mode: Hide Sign-in Buttons is offered again.
-- Tests: new `bench/auto-login-test.cjs` (both builds).
+- SponsorBlock: on webOS 25 a skip takes 0.5 to 2.5 s to finish, the longer ones at 1.25×, and the check that covers a lost `seeked` event gave up on it after 1.5 s: it logged "'seeked' never fired after skip" and reset the skip while the seek was still under way. It now waits as long as the video is still seeking, up to 10 s. The skips themselves land on the segment's end, at 1× and at 1.25× alike.
+- Tests: new `bench/auto-login-test.cjs` and `bench/sponsorblock-skip-test.cjs` (both builds).
 
 ## 1.0.0 pre-release05
 

@@ -1058,16 +1058,24 @@ class SponsorBlockHandler {
     // programmatic skip (buffer stalls / near-EOS quirks on webOS), clear the
     // isSkipping latch so the timeupdate pipeline keeps working. Mirrors the
     // 500ms fallback handleBlueButton already had, with headroom for slow seeks.
+    // A seek still in flight has not lost its event: on webOS 25 a skip takes
+    // up to 2.5 s (longer at 1.25x), so keep waiting while video.seeking,
+    // up to 10 s.
     _armSkipWatchdog() {
         if (this._skipWatchdogTimer) clearTimeout(this._skipWatchdogTimer);
-        this._skipWatchdogTimer = setTimeout(() => {
+        const armedAt = Date.now();
+        const check = () => {
             this._skipWatchdogTimer = null;
-            if (!this.isDestroyed && this.isSkipping) {
-                this.log('warn', "'seeked' never fired after skip — watchdog reset");
-                this.isSkipping = false;
-                this.resetSegmentTracking();
+            if (this.isDestroyed || !this.isSkipping) return;
+            if (this.video && this.video.seeking && Date.now() - armedAt < 10000) {
+                this._skipWatchdogTimer = setTimeout(check, 500);
+                return;
             }
-        }, 1500);
+            this.log('warn', "'seeked' never fired after skip — watchdog reset");
+            this.isSkipping = false;
+            this.resetSegmentTracking();
+        };
+        this._skipWatchdogTimer = setTimeout(check, 1500);
     }
 
     _clearSkipWatchdog() {
