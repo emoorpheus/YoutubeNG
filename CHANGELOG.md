@@ -2,6 +2,13 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
+## 1.0.0 pre-release06
+
+Fixes from the pre-release05 test on an LG OLED65M5 (webOS 25).
+
+- "Who's watching?": on a TV with no account, a video opened from outside the app (a link, a cast) now plays as guest; the screen used to open Google sign-in, because OK landed on "Add account". OK is pressed only once the focus is on the guest button or on the account being resumed; if it never gets there, the screen is left to the remote. While it is skipped the screen is transparent rather than removed, so Down reaches the guest button: before, Down went nowhere and a guest on a TV with accounts was signed in to the first one. On webOS 25 a guest is recognised as one, so Guest Mode: Hide Sign-in Buttons is offered again.
+- Tests: new `bench/auto-login-test.cjs` (both builds).
+
 ## 1.0.0 pre-release05
 
 Brought over from youtube-webos 0.8.5 beta 2, plus small fixes.

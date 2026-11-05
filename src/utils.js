@@ -162,8 +162,22 @@ export function isGuestMode() {
       return (cachedGuestMode = false); 
     }
     
-    const autoNav = window.localStorage.getItem('yt.leanback.default::AUTONAV_FOR_LIVING_ROOM');
-    if (autoNav) {
+    // Settings are stored per identity, and a "guest" entry only says the guest
+    // has been in use at some point - which settles nothing on a TV that also
+    // holds signed-in accounts. Without them it does: webOS 25's YouTube keeps no
+    // last-identity-used record for a guest, only the guest's copy of the
+    // signed-out autoplay setting.
+    const accounts = window.localStorage.getItem('yt.leanback.default::available-identities');
+    if (accounts) {
+      const parsed = JSON.parse(accounts);
+      if (parsed && parsed.data && typeof parsed.data === 'object' && Object.keys(parsed.data).length > 0) {
+        return (cachedGuestMode = false);
+      }
+    }
+    const settingKeys = ['AUTONAV_FOR_LIVING_ROOM', 'AUTONAV_FOR_SIGN_OUT'];
+    for (let i = 0; i < settingKeys.length; i++) {
+      const autoNav = window.localStorage.getItem('yt.leanback.default::' + settingKeys[i]);
+      if (!autoNav) continue;
       const parsed = JSON.parse(autoNav);
       if (parsed?.data?.guest === true) {
         return (cachedGuestMode = true);

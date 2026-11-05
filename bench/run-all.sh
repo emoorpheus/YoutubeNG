@@ -24,6 +24,7 @@ echo "--- OLED mode leaves YouTube's start-up screen (webOS 23+) ---"; node benc
 echo "--- DeArrow (webOS 22+ build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- options panel arrow keys (webOS 22+ build) ---"; node bench/panel-nav-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
+echo "--- Who's watching? bypass (webOS 23+) ---"; node bench/auto-login-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 3 build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
@@ -35,6 +36,7 @@ echo "--- thumbnail / dislike behaviour ---";  node bench/module-behaviour-test.
 echo "--- options panel build cost ---";   node bench/panel-bench.cjs dist/webOSUserScripts/userScript.js 2>&1 | grep -E "IN the handler|wall time|deferred to"
 echo "--- options panel behaviour ---";     node bench/panel-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- options panel arrow keys (webOS 3 build) ---"; node bench/panel-nav-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
+echo "--- Who's watching? bypass (webOS 3) ---"; node bench/auto-login-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- emoji observer convergence ---"; node bench/emoji-loop-test.cjs dist/webOSUserScripts/userScript.js 40 2>&1 | tail -1
 echo "--- emoji amplification ---";        node bench/emoji-amplify-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- JSON hook perf (webOS 3) ---"; node bench/hook-bench.cjs dist/webOSUserScripts/userScript.js legacy "$LABEL" 2>&1 | grep -v "^JSON:"

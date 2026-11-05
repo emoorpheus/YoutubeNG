@@ -170,6 +170,76 @@ function finalizeBypass() {
     }, 2000);
 }
 
+// The selector is answered with remote presses, and OK is only pressed once the
+// focus is verified on what the bypass means to choose. On a TV with no account
+// YouTube focuses "Add account", where OK opens Google sign-in instead of the
+// video; the guest button sits under the tiles and is reached with DOWN. If the
+// focus never gets there, the selector is left to the remote.
+const GUEST_BUTTON = '[idomkey="GuestButton"]';
+const BYPASS_START_MS = 500;      // the selector renders and takes focus first
+const BYPASS_STEP_MS = 150;
+const BYPASS_AFTER_DOWN_MS = 300; // YouTube moves its focus asynchronously
+const BYPASS_MAX_STEPS = 20;      // about 3.5 s
+const BYPASS_MAX_DOWNS = 3;
+let bypassTimer = null;
+
+function isAddAccountTile(tile) {
+    // YouTube's own data for the tile: "Add account" and "Add kids account" start a sign-in.
+    let data = null;
+    try { data = tile.__instance.props.data; } catch (e) { data = null; }
+    if (data && data.onSelectCommand) return !!data.onSelectCommand.startSignInCommand;
+    // No component data to read: "Add account" is the tile drawn with an icon, not a picture.
+    return !!tile.querySelector('yt-icon') && !tile.querySelector('ytlr-thumbnail-details');
+}
+
+// 'guest', 'add' (a sign-in tile), 'account', or null: the selector is still
+// rendering, or the focus is somewhere else, such as a sign-in overlay.
+function selectorFocus() {
+    const el = document.activeElement;
+    if (!el || !el.closest || !el.closest('ytlr-account-selector')) return null;
+    if (el.closest(GUEST_BUTTON)) return 'guest';
+    const tile = el.closest('ytlr-tile-renderer');
+    if (!tile) return null;
+    return isAddAccountTile(tile) ? 'add' : 'account';
+}
+
+function stopBypass(reason) {
+    bypassTimer = null;
+    console.warn('[Auto Login] Bypass: ' + reason + ', leaving the selector to the remote');
+    if (document.body) document.body.classList.remove(BYPASS_BODY_CLASS);
+}
+
+function runBypass() {
+    let steps = 0;
+    let downs = 0;
+    let target = null; // 'account' or 'guest', fixed by the first focus seen
+    const step = () => {
+        bypassTimer = null;
+        if (!document.body || !document.body.classList.contains(SELECTORS.ACCOUNT_SELECTOR)) {
+            if (document.body) document.body.classList.remove(BYPASS_BODY_CLASS);
+            return;
+        }
+        if (++steps > BYPASS_MAX_STEPS) return stopBypass(target ? 'the ' + target + ' choice never took focus' : 'no focus on the selector');
+        const focus = selectorFocus();
+        if (!focus) { bypassTimer = setTimeout(step, BYPASS_STEP_MS); return; }
+        // YouTube focuses the account it would resume; anything else means no account to resume.
+        if (!target) target = focus === 'account' && !isGuestMode() ? 'account' : 'guest';
+        if (focus === target) {
+            console.info('[Auto Login] Bypass: continuing as ' + target);
+            sendKey(REMOTE_KEYS.ENTER);
+            finalizeBypass();
+            return;
+        }
+        if (target === 'account') return stopBypass('the account lost focus');
+        if (!document.querySelector(GUEST_BUTTON)) return stopBypass('no guest button');
+        if (downs >= BYPASS_MAX_DOWNS) return stopBypass('the guest button never took focus');
+        downs++;
+        sendKey(REMOTE_KEYS.DOWN);
+        bypassTimer = setTimeout(step, BYPASS_AFTER_DOWN_MS);
+    };
+    bypassTimer = setTimeout(step, BYPASS_START_MS);
+}
+
 export function attemptActiveBypass(force = false) {
     const isSelector = document.body && document.body.classList.contains(SELECTORS.ACCOUNT_SELECTOR);
 
@@ -177,20 +247,12 @@ export function attemptActiveBypass(force = false) {
     // account selector page on normal loads too, not just parameterised ones.
     if (!isSelector && !force) return;
     if (hasBypassed && !force) return;
-	
+    if (bypassTimer) return; // already stepping through this selector
+
     console.info('[Auto Login] Active Bypass: Selector Detected! Executing sequence...');
     hasBypassed = true;
     injectBypassCSS();
-
-    setTimeout(() => {
-        if (isGuestMode()) {
-            sendKey(REMOTE_KEYS.DOWN);
-            setTimeout(() => { sendKey(REMOTE_KEYS.ENTER); finalizeBypass(); }, 200);
-        } else {
-            sendKey(REMOTE_KEYS.ENTER);
-            finalizeBypass();
-        }
-    }, 500);
+    runBypass();
 }
 
 export function resetActiveBypass() {
