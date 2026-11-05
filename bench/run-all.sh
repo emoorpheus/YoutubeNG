@@ -23,6 +23,7 @@ echo "--- playback speed 1080p cap (webOS 23+) ---"; node bench/speed-cap-test.c
 echo "--- OLED mode leaves YouTube's start-up screen (webOS 23+) ---"; node bench/oled-start-screen-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 22+ build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- options panel arrow keys (webOS 22+ build) ---"; node bench/panel-nav-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 3 build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
@@ -33,6 +34,7 @@ echo "--- dislike fetch/render timing ---";   node bench/dislike-timing-test.cjs
 echo "--- thumbnail / dislike behaviour ---";  node bench/module-behaviour-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- options panel build cost ---";   node bench/panel-bench.cjs dist/webOSUserScripts/userScript.js 2>&1 | grep -E "IN the handler|wall time|deferred to"
 echo "--- options panel behaviour ---";     node bench/panel-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- options panel arrow keys (webOS 3 build) ---"; node bench/panel-nav-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- spatial nav layout reads ---"; node bench/spatnav-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | grep -E "getBoundingClientRect|getComputedStyle"
 echo "--- spatial nav behaviour ---";     node bench/spatnav-correctness.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- emoji observer convergence ---"; node bench/emoji-loop-test.cjs dist/webOSUserScripts/userScript.js 40 2>&1 | tail -1

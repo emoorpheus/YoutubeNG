@@ -21,14 +21,15 @@ git fetch nb --tags
 | #203 | Display Time: Off / Time / Date and time; the old checkbox carries over (on → Time) | `src/watch.js`, `src/config.js` (`clockModes`, `upgrade`), `bench/clock-test.cjs` |
 | ad-block filters | the filters under Ad block do nothing while Ad block is off | `src/adblock.js` (`trackingBlockWanted`), `src/ui.js` |
 | dislikes | 999,950 and up reads as 1m, not 1000k | `src/return-dislike.js` |
+| panel keys | Down from a tab or the right-hand column skipped checkbox rows: a move measured a checkbox by its small box, not its row | `src/ui.js` (`pageFocusables`, `boxOf`, `nearestInDirection` from b2's `src/ui/panel/keyboard.js`), `bench/panel-nav-test.cjs`. The spatial-navigation polyfill is still bundled, but nothing calls `navigate()` any more |
 
 ## Not ported yet
 
 Planned for a rebase onto 0.8.5 final, not the beta:
 
-- **Restructure**: `src/core`, `features`, `ui`, `vendor`; own keyboard navigation instead of the spatial-navigation polyfill; one `<style>` instead of css loaders; terser `passes: 2`. This is where most of b2's smaller legacy build comes from.
+- **Restructure**: `src/core`, `features`, `ui`, `vendor`; the spatial-navigation polyfill dropped (the panel already moves its own focus, see above); one `<style>` instead of css loaders; terser `passes: 2`. This is where most of b2's smaller legacy build comes from.
 - **Tests**: the `tests/` suite, codemap and bundle budget.
-- Focus ring fix: likely not needed — the minimal skin (`src/ui-minimal.css`) marks focus with a background fill, not a ring that can be cut off; check on the TV.
+- Focus ring fix: not needed. The minimal skin (`src/ui-minimal.css`) marks focus with a background fill, not a ring, and on the TV (pre-release05) the top row's fill shows in full.
 
 ## How to bring a change over
 

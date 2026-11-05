@@ -10,8 +10,9 @@ Brought over from youtube-webos 0.8.5 beta 2, plus small fixes.
 - Display Time (Main → Interface): Off, Time, or Date + Time. The clock moves to the next minute on time and is right again after the app comes back. The old on/off setting carries over (on → Time). The clock is off by default.
 - Ad block: the filters that depend on it (Tracking Block, Shorts, live streams and the others greyed out with it) now really are off while Ad block is off; before, some of them still worked.
 - Return YouTube Dislike: 999,950 and up reads as 1m, not 1000k.
+- Settings panel, arrow keys: Down from the SponsorBlock or DeArrow tab lands on the tab's own checkbox, the first row; before, it skipped the checkbox rows and went to the first setting with arrows (Sponsor, Title formatting). Down from the right-hand column of Cosmetic Filtering goes to the row right below it, not to Force Video Codec. A move measures a checkbox by its whole row, not by its small box.
 - Tools: the installer names live in `tools/ipk-name.cjs`; `npm run version:sync` keeps `assets/appinfo.json`'s line endings, so it no longer rewrites the whole file.
-- Tests: new `bench/clock-test.cjs` and `bench/dearrow-test.cjs` (both builds); the thumbnail tests follow the response hook; `bench/run-all.sh` passes.
+- Tests: new `bench/clock-test.cjs`, `bench/dearrow-test.cjs` and `bench/panel-nav-test.cjs` (all on both builds); the thumbnail tests follow the response hook; `bench/run-all.sh` passes.
 
 ## 1.0.0 pre-release04
 
