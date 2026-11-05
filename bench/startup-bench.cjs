@@ -3,7 +3,8 @@
  * own page gets the main thread back.
  *
  *   compile   new vm.Script() - V8 parses the whole bundle (functions lazily)
- *   run       the top-level code: polyfills, config, CSS, hooks, observers
+ *   run       the top-level code (polyfills, config, CSS, hooks, observers)
+ *             and the microtasks it queued, such as a deferred style write
  *   reads     getComputedStyle / getBoundingClientRect calls during the run,
  *             each one a forced style or layout pass on the TV
  *
@@ -31,7 +32,7 @@ const codes = bundles.map((b) => fs.readFileSync(b, 'utf8'));
 const HTML = '<!doctype html><html><head><title>YouTube</title></head>' +
   '<body class="WEB_PAGE_TYPE_BROWSE"><ytlr-app><ytlr-tv-surface-content></ytlr-tv-surface-content></ytlr-app></body></html>';
 
-function once(code, i) {
+async function once(code, i) {
   const vc = new VirtualConsole();
   const dom = new JSDOM(HTML, { runScripts: 'outside-only', url: 'https://www.youtube.com/tv', virtualConsole: vc, pretendToBeVisual: true });
   const win = dom.window;
@@ -52,6 +53,8 @@ function once(code, i) {
   const script = new vm.Script(src, { filename: 'userScript.js' });
   const t1 = process.hrtime.bigint();
   script.runInContext(dom.getInternalVMContext());
+  // A microtask queued by the top level runs before these continuations.
+  for (let k = 0; k < 5; k++) await null;
   const t2 = process.hrtime.bigint();
   const r = { compile: Number(t1 - t0) / 1e6, run: Number(t2 - t1) / 1e6, styleReads, rectReads,
     styles: win.document.querySelectorAll('style').length };
@@ -60,12 +63,13 @@ function once(code, i) {
 }
 
 const q = (xs, p) => { const s = xs.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+(async () => {
 const runs = codes.map(() => []);
 for (let i = 0; i < WARMUP + N; i++) {
-  codes.forEach((code, k) => {
-    const r = once(code, i);
+  for (let k = 0; k < codes.length; k++) {
+    const r = await once(codes[k], i);
     if (i >= WARMUP) runs[k].push(r);
-  });
+  }
 }
 const stat = (xs) => `median ${q(xs, 0.5).toFixed(2).padStart(7)} ms   p25-p75 ${q(xs, 0.25).toFixed(2)}-${q(xs, 0.75).toFixed(2)} ms`;
 console.log(`${legacy ? 'webOS 3' : 'webOS 22+'}, ${N} runs each`);
@@ -84,3 +88,4 @@ if (codes.length === 2) {
   }
 }
 process.exit(0);
+})();
