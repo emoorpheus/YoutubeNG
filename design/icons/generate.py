@@ -5,8 +5,9 @@
 Draws every variant into design/icons/<K>/ (icon.png 80 px, largeIcon.png 130 px, icon.svg),
 the comparison sheets design/icons/variants.png and design/icons/launcher.png, and, for the
 chosen VARIANT, everything the app ships: assets/icon.png, assets/largeIcon.png, iconColor in
-assets/appinfo.json, assets/preview.png, assets/splash.png (plain black) and
-src/icons/settings-entry.png.
+assets/appinfo.json, assets/preview.png, assets/splash.png (plain #282828, the grey of
+YouTube's start-up screen), src/icons/settings-entry.png and src/icons/start-name.png (the
+name on the start-up screen).
 This file is the one place that decides what the app looks like.
 
 Tube geometry fitted to the reference: superellipse |x/A|^7 + |y/B|^3.75 = 1, aspect 635:445,
@@ -291,10 +292,28 @@ if __name__ == '__main__':
         text_centered(c, 'YouTube Next-Gen', 960, 745, 58, WHITE, font='Noto Sans JP Bold')
     pv = cairo_image(lambda c, S: preview(c, S), 1920, 1080)
     save_png(os.path.join(assets, 'preview.png'), pv, colors=32)
-    # splashBackground: plain black. YouTube's page then shows its own start-up screen
-    # (#loader, grey with its logo) before the app's script is in, and the app leaves it as it
-    # is: a picture of ours before or after it would only make the launch flicker between looks.
-    save_png(os.path.join(assets, 'splash.png'), Image.new('RGB', (1920, 1080), BLACK), colors=2)
+    # splashBackground: plain #282828. YouTube's page then shows its own start-up screen
+    # (#loader: this grey, YouTube's logo) before the app's script is in; a picture of ours
+    # before it would make the launch switch looks. The launcher page (src/index.html) is the
+    # same grey, should webOS show it.
+    save_png(os.path.join(assets, 'splash.png'), Image.new('RGB', (1920, 1080), (0x28, 0x28, 0x28)), colors=2)
+    # Start-up screen (src/start-screen.js): YouTube's logo moves up and this name comes in
+    # under it. White on transparent, the size it has on a 4K TV (1920 px page, devicePixelRatio
+    # 2): cap height 90 px, letters spaced 0.3 em.
+    def start_name(cap=90, track=0.30, text='NEXT-GEN'):
+        W, H = 2400, 400
+        s = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H); c = cairo.Context(s)
+        fo = cairo.FontOptions(); fo.set_antialias(cairo.ANTIALIAS_GRAY); fo.set_hint_style(cairo.HINT_STYLE_NONE); fo.set_hint_metrics(cairo.HINT_METRICS_OFF)
+        c.set_font_options(fo)
+        c.select_font_face('Noto Sans JP Bold', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        c.set_font_size(100); size = 100*cap/c.text_extents('N').height; c.set_font_size(size)
+        c.set_source_rgb(*WHITE); x = 40
+        for ch in text:
+            c.move_to(x, 300); c.show_text(ch); x += c.text_extents(ch).x_advance + track*size
+        s.flush()
+        im = Image.frombuffer('RGBA', (W, H), bytes(s.get_data()), 'raw', 'BGRa', s.get_stride(), 1).copy()
+        return im.crop(im.getbbox())
+    save_png(os.path.join(root, 'src', 'icons', 'start-name.png'), start_name(), colors=16)
 
     # ---- comparison sheet: each variant at 260 / 130 / 80 px
     def put(dst, im, radius, xy):
@@ -342,4 +361,4 @@ if __name__ == '__main__':
     print('variant  squint-distance-from-stock-YouTube')
     for k, (nm, vf, _) in VARIANTS.items():
         print(f'  {k}  {squint_distance(cairo_image(vf, 80), stock):5.1f}  {nm}')
-    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, settings-entry.png written')
+    print(f'chosen {choice}: assets/ icons, iconColor {color}, preview.png, splash.png, settings-entry.png, start-name.png written')

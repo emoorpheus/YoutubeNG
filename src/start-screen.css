@@ -1,0 +1,66 @@
+/* Start-up screen (start-screen.js): YouTube's own #loader grown into the
+   app's. Its logo (60vw wide, centred) goes onto a layer of its own at the
+   same place, moves up and shrinks to 3/4, and NEXT-GEN comes in under it.
+   Lengths in vw, as YouTube sizes the logo by the width. The logo is 444/1984
+   as high as wide. Transform and opacity only: the compositor runs them while
+   YouTube's start-up keeps the page busy. The -webkit- forms are for webOS 3
+   (Chrome 38). */
+#loader.ytng-start-grown {
+  background-size: 0 0;
+}
+
+.ytng-start-grown > .ytng-start-logo,
+.ytng-start-grown > .ytng-start-name {
+  position: absolute;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
+.ytng-start-grown > .ytng-start-logo {
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 100%;
+  background-image: inherit;
+  background-position: center center;
+  background-size: contain;
+  -webkit-animation: ytng-start-logo 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+  animation: ytng-start-logo 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* src/icons/start-name.png: 878 x 94 px, drawn 1:1 at devicePixelRatio 2
+   on a 1920 px page. Its top is 100 px (5.208vw) under the middle there:
+   logo, a gap of 0.28 of its height, then the name, centred as one block. */
+.ytng-start-grown > .ytng-start-name {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2.448vw;
+  margin-top: 5.208vw;
+  background-image: url(./icons/start-name.png);
+  background-position: center top;
+  background-size: contain;
+  opacity: 0;
+  -webkit-animation: ytng-start-name 0.4s cubic-bezier(0.2, 0, 0, 1) 0.15s both;
+  animation: ytng-start-name 0.4s cubic-bezier(0.2, 0, 0, 1) 0.15s both;
+}
+
+@-webkit-keyframes ytng-start-logo {
+  from { -webkit-transform: none; transform: none; }
+  to { -webkit-transform: translateY(-2.582vw) scale(0.75); transform: translateY(-2.582vw) scale(0.75); }
+}
+
+@keyframes ytng-start-logo {
+  from { transform: none; }
+  to { transform: translateY(-2.582vw) scale(0.75); }
+}
+
+@-webkit-keyframes ytng-start-name {
+  from { opacity: 0; -webkit-transform: translateY(0.8vw); transform: translateY(0.8vw); }
+  to { opacity: 1; -webkit-transform: none; transform: none; }
+}
+
+@keyframes ytng-start-name {
+  from { opacity: 0; transform: translateY(0.8vw); }
+  to { opacity: 1; transform: none; }
+}

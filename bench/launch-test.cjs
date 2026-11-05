@@ -1,6 +1,7 @@
 /**
  * Verifies dist/index.js (the launcher page) still builds the same YouTube URL
- * after the launch.js split, under a simulated Chromium 38.
+ * after the launch.js split, under a simulated Chromium 38. The page leaves
+ * only after it has been painted (a frame), or after 200 ms without frames.
  */
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
@@ -20,10 +21,12 @@ const cases = [
   [{ contentTarget: 'theme=k' }, ['theme=k']]
 ];
 
-let fail = 0;
-for (const [params, expects] of cases) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Loads dist/index.js; returns the URL it went to: synchronously, by `early` ms and by 300 ms.
+async function launch(params, visual, early) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
-    url: 'https://example.com/', runScripts: 'outside-only'
+    url: 'https://example.com/', runScripts: 'outside-only', pretendToBeVisual: visual
   });
   const w = dom.window;
   w.launchParams = JSON.stringify(params);
@@ -48,10 +51,20 @@ for (const [params, expects] of cases) {
   // Downgrade only after the Proxy shim is built (Proxy itself is Chrome 49).
   applyChrome38Downgrade(w);
 
-  try {
-    w.eval('(function(window){' + fs.readFileSync(ROOT + '/dist/index.js', 'utf8') + '})(__fakeWindow)');
-  } catch (e) { console.log('FAIL threw:', e.message); fail++; continue; }
-  const href = w.eval('__getHref()');
+  w.eval('(function(window){' + fs.readFileSync(ROOT + '/dist/index.js', 'utf8') + '})(__fakeWindow)');
+  const sync = w.eval('__getHref()');
+  await sleep(early);
+  const byEarly = w.eval('__getHref()');
+  await sleep(300 - early);
+  return { sync, byEarly, href: w.eval('__getHref()') };
+}
+
+(async () => {
+let fail = 0;
+for (const [params, expects] of cases) {
+  let r;
+  try { r = await launch(params, false, 150); } catch (e) { console.log('FAIL threw:', e.message); fail++; continue; }
+  const href = r.href;
 
   const missing = expects.filter((e) => !href || href.indexOf(e) === -1);
   const noTheme = params.contentTarget === 'theme=k'
@@ -63,5 +76,18 @@ for (const [params, expects] of cases) {
     console.log(`PASS ${JSON.stringify(params).slice(0, 58)}`);
   }
 }
-console.log(fail ? `\n${fail} failed` : `\nall ${cases.length} launch cases passed`);
+// The grey page is painted before it leaves: not in the same task; with frames,
+// after the first one (well before 200 ms); without frames, after 200 ms.
+const timing = [
+  ['stays until painted', async () => { const r = await launch({}, true, 150); return r.sync === null && !!r.byEarly; }],
+  ['no frames: leaves after 200 ms', async () => { const r = await launch({}, false, 150); return r.sync === null && r.byEarly === null && !!r.href; }]
+];
+for (const [name, run] of timing) {
+  let ok = false;
+  try { ok = await run(); } catch (e) { console.log('FAIL threw:', e.message); }
+  if (ok) console.log(`PASS ${name}`); else { fail++; console.log(`FAIL ${name}`); }
+}
+const total = cases.length + timing.length;
+console.log(fail ? `\n${fail} failed` : `\nall ${total} launch cases passed`);
 process.exit(fail ? 1 : 0);
+})();

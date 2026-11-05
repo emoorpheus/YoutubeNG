@@ -5,6 +5,7 @@ import './perf_mon.js';
 import 'whatwg-fetch';
 import './polyfills.js';
 import './domrect-polyfill';
+import './start-screen.js'; // YouTube's start-up screen grown into the app's
 // Wraps JSON.parse: has to come before adblock.js, see the file header.
 import './settings-entry.js'; // "YouTube Next-Gen" item in YouTube's Settings screen
 import './playback-speed.js';

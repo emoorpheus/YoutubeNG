@@ -68,7 +68,7 @@ npm run launch -- -d tv
 
 ## Icon
 
-`design/icons/generate.py` draws all icon variants (`design/icons/variants.png`, in the launcher: `design/icons/launcher.png`) and, for the chosen one, everything the app ships: icons, preview, splash and the picture of the item in YouTube's Settings. Default is **J** (red button). To switch:
+`design/icons/generate.py` draws all icon variants (`design/icons/variants.png`, in the launcher: `design/icons/launcher.png`) and, for the chosen one, everything the app ships: icons, preview, splash, the NEXT-GEN of the start-up screen and the picture of the item in YouTube's Settings. Default is **J** (red button). To switch:
 
 ```sh
 python3 design/icons/generate.py I

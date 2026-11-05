@@ -68,7 +68,7 @@ npm run launch -- -d tv
 
 ## Иконка
 
-`design/icons/generate.py` рисует все варианты иконки (`design/icons/variants.png`, в лаунчере — `design/icons/launcher.png`) и для выбранного — всё, что входит в приложение: иконки, превью, заставку и картинку пункта в настройках YouTube. По умолчанию — **J** («Красная кнопка»). Переключение:
+`design/icons/generate.py` рисует все варианты иконки (`design/icons/variants.png`, в лаунчере — `design/icons/launcher.png`) и для выбранного — всё, что входит в приложение: иконки, превью, заставку, надпись NEXT-GEN на стартовом экране и картинку пункта в настройках YouTube. По умолчанию — **J** («Красная кнопка»). Переключение:
 
 ```sh
 python3 design/icons/generate.py I
