@@ -87,7 +87,7 @@ npm run package:all
 - [AGENTS.md](AGENTS.md) — устройство проекта, команды и правила для любого агента (и для людей).
 - [CLAUDE.md](CLAUDE.md) — вход для Claude Code: подключает `AGENTS.md` и добавляет несколько замечаний.
 
-В [CONTRIBUTING.md](CONTRIBUTING.md) — как сообщить об ошибке или прислать изменение, в [SECURITY.md](SECURITY.md) — как сообщить о проблеме безопасности (оба на английском). В [docs/upstream.md](docs/upstream.md) — что перенесено из youtube-webos 0.8.5, в [docs/perf.md](docs/perf.md) — все оптимизации с замерами.
+В [CONTRIBUTING.md](CONTRIBUTING.md) — как сообщить об ошибке или прислать изменение, в [SECURITY.md](SECURITY.md) — как сообщить о проблеме безопасности и что приложение куда отправляет (оба на английском). В [docs/upstream.md](docs/upstream.md) — что перенесено из youtube-webos 0.8.5, в [docs/perf.md](docs/perf.md) — все оптимизации с замерами.
 
 ## Лицензия
 

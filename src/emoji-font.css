@@ -20,8 +20,6 @@ img.emoji {
    activates on a legacy webOS device (the modern build aliases emoji-font.js
    away entirely, so this rule set is also absent from that bundle). */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic&family=Noto+Sans+Math&display=swap');
-
 html.ytng-legacy-emoji yt-formatted-string,
 html.ytng-legacy-emoji yt-core-attributed-string,
 html.ytng-legacy-emoji .yt-tv-text,

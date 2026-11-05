@@ -28,8 +28,8 @@ Third-party code and assets
 Online services used at runtime: SponsorBlock (sponsorblock.inf.re, with
 sponsor.ajay.app as fallback), DeArrow when turned on (sponsor.ajay.app,
 dearrow-thumb.ajay.app), Return YouTube Dislike (returnyoutubedislikeapi.com);
-in the webOS 3+ build also Google Fonts, and on webOS 4 and older Twemoji
-images (cdnjs.cloudflare.com).
+on webOS 4 and older also Google Fonts and Twemoji images
+(cdnjs.cloudflare.com).
 
 "YouTube" is a trademark of Google LLC. This project is not affiliated with,
 endorsed or sponsored by Google LLC or LG Electronics.

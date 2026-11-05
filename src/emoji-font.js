@@ -252,6 +252,14 @@ if (document.characterSet === 'UTF-8' && getWebOSVersion() <= 4) {
   // only apply on legacy webOS where this module actually loads.
   document.documentElement.classList.add('ytng-legacy-emoji');
 
+  // The fonts those rules name for Arabic and maths, which webOS 4 and older
+  // lack. Asked for here rather than with an @import in the CSS, so that a
+  // newer webOS running this build does not ask Google for them at launch.
+  const fonts = document.createElement('link');
+  fonts.rel = 'stylesheet';
+  fonts.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic&family=Noto+Sans+Math&display=swap';
+  (document.head || document.documentElement).appendChild(fonts);
+
   // Hook into configurations
   manageObserverState();
   configAddChangeListener('enableLegacyEmojiFix', manageObserverState);

@@ -58,8 +58,13 @@ export function handleLaunch(params) {
 
   if (typeof contentTarget === 'string') {
     const sameOrigin = sameOriginURL(contentTarget, ytURL.origin);
-    if (sameOrigin) {
+    if (sameOrigin && sameOrigin.pathname === ytURL.pathname) {
       ytURL = sameOrigin;
+    } else if (sameOrigin) {
+      // Launch params also come from other apps and DIAL casts on the local
+      // network: open only the TV app, never another youtube.com page
+      // (/logout, /redirect...). A /watch?v=...&t=... link keeps its query.
+      concatSearchParams(ytURL.searchParams, sameOrigin.searchParams);
     } else {
       if (contentTarget.startsWith('v=v=')) contentTarget = contentTarget.substring(2);
 

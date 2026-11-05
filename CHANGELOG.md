@@ -5,8 +5,10 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 ## Unreleased
 
 - Start-up screen in OLED mode: it turns black in step with the logo's move, over the same 0.45 s. YouTube's logo picture has a grey of its own round it, so the whole screen is filtered as one: the grey goes to black round the logo and in its box alike, white and red stay as they are. It is grey until the app's script is in, as before: the webOS splash is a fixed picture, and the launcher page and YouTube's own start-up screen are drawn before the setting can be read. Without OLED mode nothing changes. A filter animation, which the compositor runs like the logo's move; each build is 0.6 KB bigger.
-- Tests: `bench/start-screen-test.cjs` covers OLED mode (both builds).
-- Repository: a contributing guide, a security policy, issue and pull request templates. A release's notes are its section of this file, and it carries a `SHA256SUMS` of the installers; CI also runs `bench/run-all.sh`. The docs no longer name the test TV's model or firmware.
+- Links from other apps and from casts open only YouTube's TV page. A link to another youtube.com page, a sign-out or a redirect to another site, used to open that page in the app; now only its query is kept, so a `/watch?v=...` link still opens the video. Such links come from other apps on the TV and from phones on the local network (DIAL). Each build is 0.1 KB bigger.
+- webOS 3+ build: Google Fonts is asked for its Arabic and maths fonts only on webOS 4 and older, which lack them. On a newer webOS this build asked at every launch, for fonts it never used. 0.1 KB bigger.
+- Tests: `bench/start-screen-test.cjs` covers OLED mode (both builds); `bench/launch-test.cjs` checks that every launch ends on youtube.com/tv; new `bench/google-fonts-test.cjs`.
+- Repository: a contributing guide, a security policy that also lists what the app sends where, issue and pull request templates. terser-webpack-plugin, which the build imports, is a declared dev dependency now: newer webpack no longer brings it along, so updating the build tools broke the build. A release's notes are its section of this file, and it carries a `SHA256SUMS` of the installers; CI also runs `bench/run-all.sh`. The docs no longer name the test TV's model or firmware.
 
 ## 1.0.0 pre-release06
 

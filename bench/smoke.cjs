@@ -78,7 +78,8 @@ const done = () => {
   const css = sheets.length === 1 ? sheets[0].textContent : '';
   const order = ['.ytng-ui-container{', '--ytng-oled-opacity', '.ytng-welcome{', '.ytng-ui-container,.ytng-ui-container.oled-care'].map((m) => css.indexOf(m));
   push('one <style> holds every stylesheet', sheets.length === 1, 'style tags: ' + sheets.length);
-  push('the font @import comes first in it', css.indexOf('@import ') === 0);
+  // webOS 3 lacks fonts for Arabic and maths: Google's, asked for once (bench/google-fonts-test.cjs).
+  push('Google Fonts asked for once, not in the <style>', win.document.querySelectorAll('link[href^="https://fonts.googleapis.com/"]').length === 1 && css.indexOf('@import') === -1);
   push('stylesheets in import order', order.every((at, i) => at !== -1 && (i === 0 || at > order[i - 1])), order.join(' '));
   push('Element#matches polyfilled', typeof win.Element.prototype.matches === 'function');
   push('Node#isConnected polyfilled', 'isConnected' in win.Node.prototype);

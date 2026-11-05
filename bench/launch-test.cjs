@@ -2,6 +2,10 @@
  * Verifies dist/index.js (the launcher page) still builds the same YouTube URL
  * after the launch.js split, under a simulated Chromium 38. The page leaves
  * only after it has been painted (a frame), or after 200 ms without frames.
+ *
+ * Launch parameters come from other apps and from DIAL casts on the local
+ * network, so every case must end on https://www.youtube.com/tv: other
+ * youtube.com pages (/logout, /redirect...) only lend it their query.
  */
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
@@ -18,7 +22,13 @@ const cases = [
    ['inApp=true', 'vs=9', 'va=play', 'launch=voice', 'vq=lofi+beats']],
   [{ contentTarget: { intent: 'SearchContent', intentParam: 'cats' } },
    ['va=search', 'launch=voice', 'launch=search', 'vq=cats']],
-  [{ contentTarget: 'theme=k' }, ['theme=k']]
+  [{ contentTarget: 'theme=k' }, ['theme=k']],
+  [{ contentTarget: 'https://www.youtube.com/tv#/watch?v=abc' }, ['#/watch?v=abc']],
+  [{ contentTarget: 'https://www.youtube.com/watch?v=abc&t=5' }, ['v=abc', 't=5']],
+  [{ contentTarget: 'https://www.youtube.com/logout' }, []],
+  [{ contentTarget: 'https://www.youtube.com/redirect?q=https%3A%2F%2Fevil.example%2F' }, []],
+  [{ contentTarget: 'https://www.youtube.com.evil.example/tv?v=abc' }, []],
+  [{ target: 'javascript:alert(1)' }, []]
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -69,9 +79,14 @@ for (const [params, expects] of cases) {
   const missing = expects.filter((e) => !href || href.indexOf(e) === -1);
   const noTheme = params.contentTarget === 'theme=k'
     ? href.indexOf('env_forceFullAnimation') !== -1 : false;
-  if (missing.length || noTheme) {
+  let onTV = false;
+  try {
+    const u = new URL(href);
+    onTV = u.origin === 'https://www.youtube.com' && u.pathname === '/tv';
+  } catch { /* not a URL: fails below */ }
+  if (missing.length || noTheme || !onTV) {
     fail++;
-    console.log(`FAIL ${JSON.stringify(params)}\n     href    ${href}\n     missing ${missing.join(', ')}${noTheme ? ' | env_* not stripped for theme=k' : ''}`);
+    console.log(`FAIL ${JSON.stringify(params)}\n     href    ${href}\n     missing ${missing.join(', ')}${noTheme ? ' | env_* not stripped for theme=k' : ''}${onTV ? '' : ' | not https://www.youtube.com/tv'}`);
   } else {
     console.log(`PASS ${JSON.stringify(params).slice(0, 58)}`);
   }

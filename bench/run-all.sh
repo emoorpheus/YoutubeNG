@@ -44,6 +44,7 @@ echo "--- SponsorBlock skip watchdog (webOS 3) ---"; node bench/sponsorblock-ski
 echo "--- start-up screen (webOS 3) ---"; node bench/start-screen-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- emoji observer convergence ---"; node bench/emoji-loop-test.cjs dist/webOSUserScripts/userScript.js 40 2>&1 | tail -1
 echo "--- emoji amplification ---";        node bench/emoji-amplify-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- Google Fonts only on webOS 4 and older ---"; node bench/google-fonts-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- JSON hook perf (webOS 3) ---"; node bench/hook-bench.cjs dist/webOSUserScripts/userScript.js legacy "$LABEL" 2>&1 | grep -v "^JSON:"
 echo "--- perf_mon build (--env perf) ---"
 npx webpack --mode=production --env perf > /tmp/perf.log 2>&1
