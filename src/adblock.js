@@ -291,8 +291,6 @@ function walkAndProcess(obj, doEmoji, doTracking, maxDepth, currentDepth = 0) {
   if (doTracking && typeof obj.trackingParams === 'string') obj.trackingParams = '';
   // NOTE: do NOT strip clickTrackingParams here — that breaks clicking endcards.
 
-  if (doEmoji) processTextFieldsInPlace(obj);
-
   const nextDepth = currentDepth + 1;
 
   if (Array.isArray(obj)) {
@@ -301,6 +299,9 @@ function walkAndProcess(obj, doEmoji, doTracking, maxDepth, currentDepth = 0) {
       if (v && typeof v === 'object') walkAndProcess(v, doEmoji, doTracking, maxDepth, nextDepth);
     }
   } else {
+    // Objects only: JSON.parse gives an array no simpleText/runs/content of its own.
+    if (doEmoji) processTextFieldsInPlace(obj);
+
     // for-in, not Object.keys(): identical visited set for JSON.parse output,
     // without allocating an array at every node of the response tree.
     for (const k in obj) {
