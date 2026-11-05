@@ -30,3 +30,19 @@ From the `<style>` row on, `run` also counts the microtasks the top level queued
 Response hook rows marked *default settings*: `hook-bench.cjs` wrote its settings after the bundle had read them, so it measured Ad block and, on webOS 3, the emoji fix, not Tracking Block or the Shorts and live filters. It writes them first now and warns if Tracking Block did not come on.
 
 Not seen in jsdom: on webOS 22+ the polyfill also read the root element's computed style three times and registered three CSS properties at document start.
+
+## On a TV
+
+LG OLED65M59LA, webOS 25 (firmware 33.30.97), the webOS 22+ ipk of `daa6a5c` against that of `c07dab8`. Each build reloaded six times under a DevTools trace; the injected `userScript.js` is the longest `EvaluateScript` without a URL.
+
+| | `daa6a5c` | `c07dab8` |
+|---|---|---|
+| Evaluate, median of 6 (min–max) | 127.6 ms (116.6–144.2) | 77.3 ms (74.6–92.0): −50 ms, −39 % |
+| Compile / run, medians | 31.0 / 98.2 ms | 19.8 / 57.6 ms |
+| Style recalculations inside it (`UpdateLayoutTree`) | 3, the polyfill's | 0 |
+| `<style>` elements on Home | 18: YouTube's 4, ours 14 | 6: YouTube's 4, ours 2 (in both builds the comments fix, built from YouTube's rules at run time, keeps its own) |
+| CSS rules on the page | 3,868 | 3,868, the same; ours (197) in the same order |
+
+The slowest new run beat the fastest old one. The webOS 3 build has no TV to run on, so jsdom only.
+
+Also checked on that TV with `c07dab8`: no exceptions in the console through reloads and playback; the panel opens on the green button, arrow keys walk its rows and tabs, Back closes it; OLED care turns the page black and back; DeArrow titles in search; SponsorBlock loaded 19 segments and skipped a self-promotion one.
