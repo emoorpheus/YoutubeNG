@@ -16,5 +16,9 @@ Keep the old bundles before a change: `cp dist/webOSUserScripts/userScript.js /t
 |---|---|---|---|
 | Baseline, `daa6a5c` | 379,715 B (112,777) / 323,689 B (96,985) | | |
 | No spatial-navigation polyfill | 361,598 B (107,385) / 306,830 B (92,002): −4.8 % / −5.2 % | webOS 3: compile −0.54 ms (97), run −0.30 ms (87); webOS 22+: compile −0.46 ms (98), run −0.30 ms (88) | yes |
+| One `<style>` for every stylesheet (b2) | 354,292 B (105,855) / 299,716 B (90,475): −2.0 % / −2.3 % | webOS 3: compile −0.27 ms (80), run −2.32 ms (92); webOS 22+: compile −0.42 ms (93), run −2.42 ms (94) | yes |
+| terser `passes: 2` (b2) | not tried: ours is 4, and b2 measured passes past two at some 50 bytes | | |
+
+From the `<style>` row on, `run` also counts the microtasks the top level queued: the one `<style>` is written in one.
 
 Not seen in jsdom: on webOS 22+ the polyfill also read the root element's computed style three times and registered three CSS properties at document start.

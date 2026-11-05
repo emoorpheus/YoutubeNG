@@ -2,6 +2,7 @@ import { clockModes, dearrowThumbnailFallbacks, dearrowTitleFormats, logoStyles,
 import { titleFormattingSupported } from './dearrow/index.js';
 import { configAddChangeListener, configRemoveChangeListener, configRead, configWrite, configGetDesc, segmentTypes, configGetDefault, shortcutActions, sbModes, sbModesHighlight, forcePreviewModes } from './config.js';
 import './ui.css';
+import { addStyle } from './styles.js';
 import './auto-login.js';
 import './return-dislike.js';
 import { initVideoQuality } from './video-quality.js';
@@ -1446,14 +1447,15 @@ document.addEventListener('keydown', eventHandler, true);
 // --- Initialization & CSS Injection ---
 
 function initGlobalStyles() {
-    // Static stylesheet — written once, never rebuilt. Toggling a class on the
+    // Static stylesheet — written once, never rebuilt, into the bundle's one
+    // <style> (src/styles.js) right after the stylesheets of ui.js's imports,
+    // where its own <style> used to go. Toggling a class on the
     // <html> element activates/deactivates each section. We use documentElement
     // rather than body because YouTube's leanback app rewrites body.className
     // on tab navigation (Home → Gaming, etc.) and would wipe our toggles.
     // .ytng-hide-controls stays on body because it's owned by play/pause logic,
     // not config — YouTube never touches it.
-    const style = createElement('style');
-    style.textContent = `
+    addStyle(`
         :root { --ytng-oled-opacity: 1; }
 
         html.ytng-hide-logo ytlr-redux-connect-ytlr-logo-entity,
@@ -1546,8 +1548,7 @@ function initGlobalStyles() {
             background-color: rgba(0, 0, 0, 0.3) !important;
         }
         body .ytLrWatchDefault2025Shadow { background-color: rgba(11, 11, 11, 0.5) !important; }
-    `;
-    document.head.appendChild(style);
+    `);
 
     const syncClass = (cls, key) => document.documentElement.classList.toggle(cls, !!configRead(key));
     const CLASS_KEYS = {

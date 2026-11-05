@@ -71,8 +71,15 @@ const done = () => {
   push('no exception during evaluation', !threw, threw && (threw.stack || String(threw)).split('\n').slice(0, 4).join(' | '));
   push('JSON.parse was hooked', win.JSON.parse.toString().indexOf('native code') === -1);
   push('JSON.stringify was hooked', win.JSON.stringify.toString().indexOf('native code') === -1);
-  push('CSS injected by style-loader', win.document.querySelectorAll('style').length > 0,
-       'style tags: ' + win.document.querySelectorAll('style').length);
+  // Every stylesheet in one <style>, in import order (src/styles.js); the
+  // comments fix adds its own after it. ui.js's static block sits between its
+  // imports' stylesheets and welcome.css, where its own <style> used to go.
+  const sheets = Array.from(win.document.querySelectorAll('style')).filter((s) => s.id !== 'ytng-comments-close-fix');
+  const css = sheets.length === 1 ? sheets[0].textContent : '';
+  const order = ['.ytng-ui-container{', '--ytng-oled-opacity', '.ytng-welcome{', '.ytng-ui-container,.ytng-ui-container.oled-care'].map((m) => css.indexOf(m));
+  push('one <style> holds every stylesheet', sheets.length === 1, 'style tags: ' + sheets.length);
+  push('the font @import comes first in it', css.indexOf('@import ') === 0);
+  push('stylesheets in import order', order.every((at, i) => at !== -1 && (i === 0 || at > order[i - 1])), order.join(' '));
   push('Element#matches polyfilled', typeof win.Element.prototype.matches === 'function');
   push('Node#isConnected polyfilled', 'isConnected' in win.Node.prototype);
 

@@ -55,6 +55,8 @@ setTimeout(() => {
   t('no jsdomError during load', errors.length === 0, errors[0]);
   t('JSON.parse hooked', win.JSON.parse.toString().indexOf('native code') === -1);
   t('JSON.stringify hooked', win.JSON.stringify.toString().indexOf('native code') === -1);
+  const sheets = Array.from(win.document.querySelectorAll('style')).filter((s) => s.id !== 'ytng-comments-close-fix');
+  t('one <style> holds every stylesheet', sheets.length === 1, 'style tags: ' + sheets.length);
   // The legacy-only modules must be aliased out of this build.
   const src = fs.readFileSync(bundlePath, 'utf8');
   t('polyfills.js excluded from modern build', src.indexOf('Array.from requires an array-like') === -1);
