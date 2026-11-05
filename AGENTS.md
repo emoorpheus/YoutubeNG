@@ -12,7 +12,7 @@ YouTube Next-Gen (NG, short for new-gen): a YouTube app for LG webOS TVs, a fork
 |---|---|
 | `src/userScript.js` | entry injected into YouTube; imports every feature |
 | `src/index.js`, `src/index.html` | launcher page |
-| `src/start-screen.js`, `src/start-screen.css` | YouTube's start-up screen grown into the app's: logo up, NEXT-GEN under it |
+| `src/start-screen.js`, `src/start-screen.css` | YouTube's start-up screen grown into the app's: logo up, NEXT-GEN under it; black in OLED mode |
 | `src/config.js` | settings: `configOptions` (key → default, `desc`), `configRead` / `configWrite` / change listeners |
 | `src/ui.js`, `src/ui-minimal.css` | settings panel; the minimal skin overrides `ui.css` |
 | `src/settings-entry.js`, `src/welcome.js` | "YouTube Next-Gen" item in YouTube's Settings; first-launch hint |

@@ -1,8 +1,10 @@
 /**
  * OLED mode and YouTube's start-up screen. Modern build.
- * YouTube's page paints #loader (grey, its logo) before the userscript is in;
- * OLED mode must leave it exactly as YouTube draws it - no second look during
- * launch - while the other surface greys still turn black.
+ * YouTube's page paints #loader (grey, its logo) before the userscript is in.
+ * The palette sweep leaves its rule alone - switching it would turn the screen
+ * black at once, with a grey box round the logo; start-screen.js fades it to
+ * black in step with the logo instead (bench/start-screen-test.cjs) - while
+ * the other surface greys still turn black.
  * Usage: node bench/oled-start-screen-test.cjs dist/webOSUserScripts/userScript.js
  */
 const fs = require('fs');

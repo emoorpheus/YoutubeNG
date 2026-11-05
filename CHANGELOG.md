@@ -2,6 +2,11 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
+## Unreleased
+
+- Start-up screen in OLED mode: it turns black in step with the logo's move, over the same 0.45 s. YouTube's logo picture has a grey of its own round it, so the whole screen is filtered as one: the grey goes to black round the logo and in its box alike, white and red stay as they are. It is grey until the app's script is in, as before: the webOS splash is a fixed picture, and the launcher page and YouTube's own start-up screen are drawn before the setting can be read. Without OLED mode nothing changes. A filter animation, which the compositor runs like the logo's move; each build is 0.6 KB bigger.
+- Tests: `bench/start-screen-test.cjs` covers OLED mode (both builds).
+
 ## 1.0.0 pre-release06
 
 Fixes from the pre-release05 test on an LG OLED65M5 (webOS 25).

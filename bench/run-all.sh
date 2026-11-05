@@ -20,7 +20,7 @@ npx webpack --mode=production --env modern > /tmp/mod.log 2>&1
 ME=$(grep -c "^ERROR" /tmp/mod.log || true); [ "$ME" != "0" ] && { echo "MODERN BUILD ERRORS: $ME"; grep "^ERROR" /tmp/mod.log | head -3; }
 node bench/modern-smoke.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- playback speed 1080p cap (webOS 23+) ---"; node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
-echo "--- OLED mode leaves YouTube's start-up screen (webOS 23+) ---"; node bench/oled-start-screen-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- OLED palette sweep leaves YouTube's #loader rule (webOS 23+) ---"; node bench/oled-start-screen-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 22+ build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- pause screensaver / background pause (webOS 23+) ---"; node bench/pause-screensaver-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- options panel arrow keys (webOS 22+ build) ---"; node bench/panel-nav-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1

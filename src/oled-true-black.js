@@ -45,7 +45,8 @@ const CHIP_GREYS = {
 const CHIP_FILL = 'rgb(26, 26, 26)';
 const STATE_SELECTOR = /:hover|:focus|:active|zylon-focus/;
 // YouTube's start-up screen (#loader, grey with its logo) is painted before
-// this script runs; recolouring it would only add a second look to the launch.
+// this script runs. Recolouring it here would switch it to black at once, with
+// a grey box round the logo; start-screen.js fades it to black instead.
 const START_SCREEN = /#loader\b/;
 const BACKDROP_IMAGE = /gstatic\.com\/ytlr\/img\/[^)]*gradient/i;
 

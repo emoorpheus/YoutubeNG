@@ -9,7 +9,13 @@
  * layer is inside #loader, so it goes when YouTube removes it. A loader drawn
  * any other way is left as it is. The webOS splash and the launcher page are
  * the same grey (design/icons/generate.py, src/index.html).
+ *
+ * In OLED mode the screen also turns black, in step with the logo's move
+ * (start-screen.css). Before this script runs it is grey: the webOS splash is
+ * a fixed picture, and the launcher page and YouTube's own loader are drawn
+ * before the setting can be read.
  */
+import { configRead } from './config.js';
 import './start-screen.css';
 
 const GROWN = 'ytng-start-grown';
@@ -25,6 +31,10 @@ export function growStartScreen() {
     CENTRED.test(cs.backgroundPosition) &&
     /^no-repeat/.test(cs.backgroundRepeat);
   if (!drawnAsExpected) return false;
+  // OLED mode: the filter takes greys up to YouTube's #282828 to black; a
+  // loader of another colour keeps it.
+  const grey = /^rgb\((\d+), \1, \1\)$/.exec(cs.backgroundColor);
+  if (configRead('enableOledCareMode') && grey && +grey[1] <= 40) loader.classList.add('ytng-start-oled');
   const logo = document.createElement('div');
   logo.className = 'ytng-start-logo';
   const name = document.createElement('div');

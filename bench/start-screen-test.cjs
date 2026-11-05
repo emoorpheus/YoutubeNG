@@ -49,12 +49,17 @@ function boot({ rule = LOADER_RULE, loader = true, oled = false } = {}) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const layer = (doc) => [...doc.querySelectorAll('.ytng-start-logo, .ytng-start-name')];
 const ourCss = (doc) => [...doc.querySelectorAll('style')].map((s) => s.textContent).filter((c) => c.indexOf('ytng-start') !== -1).join('');
-// The declarations of the rule with exactly this selector (minified CSS; it may
-// come first, or after a rule or an @import).
+// The declarations for this selector from every rule that lists it, @keyframes
+// left out (minified CSS: cssnano merges rules that share declarations).
 function rule(css, selector) {
-  const esc = selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&');
-  const m = new RegExp('(?:^|[};])' + esc + '\\{([^}]*)\\}').exec(css);
-  return m ? m[1] : '';
+  const flat = css.replace(/@(-webkit-)?keyframes [-\w]+\{(?:[^{}]*\{[^{}]*\})*\}/g, '');
+  const out = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(flat))) {
+    if (m[1].slice(m[1].lastIndexOf(';') + 1).split(',').indexOf(selector) !== -1) out.push(m[2]);
+  }
+  return out.join(';');
 }
 function keyframes(css, name) {
   const out = [];
@@ -83,6 +88,7 @@ const t = (n, ok, x) => { ok ? pass++ : fail++; console.log((ok ? 'PASS ' : 'FAI
   t('the logo layer, then the name, inside #loader', [...loader.children].map((e) => e.className).join() === 'ytng-start-logo,ytng-start-name',
     [...loader.children].map((e) => e.className));
   t('nothing of it outside #loader', layer(a.doc).every((e) => e.parentNode === loader), layer(a.doc).length);
+  t('without OLED mode: #loader not marked', !loader.classList.contains('ytng-start-oled'), loader.className);
   const css = ourCss(a.doc);
   t("#loader stops drawing its logo (the layer draws it)", rule(css, '#loader.ytng-start-grown') === 'background-size:0 0', rule(css, '#loader.ytng-start-grown'));
   const logo = rule(css, '.ytng-start-grown>.ytng-start-logo');
@@ -120,13 +126,52 @@ const t = (n, ok, x) => { ok ? pass++ : fail++; console.log((ok ? 'PASS ' : 'FAI
   await sleep(150);
   t('run before the body: grown at DOMContentLoaded', wasLoading && late.classList.contains('ytng-start-grown') && late.children.length === 2, { wasLoading, cls: late.className });
 
-  // E: OLED mode: the loader is grown and YouTube's grey stays as it is.
+  // E: OLED mode: the screen turns black in step with the logo's move.
+  // YouTube's logo PNG is opaque, on its own #282828: the loader is filtered
+  // as one, so that grey goes to black round the logo and in its box alike.
   const e = boot({ oled: true });
   await sleep(100);
+  const el = e.doc.getElementById('loader');
   const ylRule = [...e.doc.getElementById('yt').sheet.cssRules].find((r) => r.selectorText === '#loader');
   t("OLED mode: grown, YouTube's #loader rule untouched",
-    e.doc.getElementById('loader').classList.contains('ytng-start-grown') && /#282828|rgb\(40, 40, 40\)/.test(ylRule.style.getPropertyValue('background-color')),
+    el.classList.contains('ytng-start-grown') && /#282828|rgb\(40, 40, 40\)/.test(ylRule.style.getPropertyValue('background-color')),
     ylRule.style.getPropertyValue('background-color'));
+  t('OLED mode: #loader marked, nothing else added',
+    el.classList.contains('ytng-start-oled') && [...el.children].map((c) => c.className).join() === 'ytng-start-logo,ytng-start-name',
+    [el.className, [...el.children].map((c) => c.className)]);
+  const ecss = ourCss(e.doc);
+  const timing = (decls, prefix) => { const m = new RegExp('(?:^|;)' + prefix + 'animation:[-a-z]+ ([^;]*)').exec(decls); return m ? m[1] : null; };
+  const oledRule = rule(ecss, '#loader.ytng-start-oled');
+  const logoRule = rule(ecss, '.ytng-start-grown>.ytng-start-logo');
+  t("the whole loader is filtered, in step with the logo's move (same duration and curve, also -webkit-)",
+    /(?:^|;)animation:ytng-start-oled /.test(oledRule) && /-webkit-animation:ytng-start-oled /.test(oledRule) &&
+      !!timing(logoRule, '') && timing(oledRule, '') === timing(logoRule, '') && timing(oledRule, '-webkit-') === timing(logoRule, '-webkit-'),
+    [oledRule, timing(logoRule, '')]);
+  const of = keyframes(ecss, 'ytng-start-oled');
+  const ofProps = [...new Set(of.filter(Boolean).flatMap(props))];
+  t('it animates a filter only, also as -webkit- (webOS 3)',
+    !!of[0] && !!of[1] && ofProps.length > 0 && ofProps.every((p) => p === 'filter' || p === '-webkit-filter') && /-webkit-filter:/.test(of[1]), [of, ofProps]);
+  // brightness(b) then contrast(c), per channel, clamped as the browser does.
+  const fparts = (block, at) => { const m = new RegExp(at + '\\{(?:[^}]*;)?filter:brightness\\(([\\d.]+)\\) contrast\\(([\\d.]+)\\)').exec(block || ''); return m ? [+m[1], +m[2]] : null; };
+  const clamp = (v) => Math.min(1, Math.max(0, v));
+  const map = (bc, v) => bc ? Math.round(255 * clamp((clamp(v / 255 * bc[0]) - 0.5) * bc[1] + 0.5)) : null;
+  const from = fparts(of[0], '(?:from|0%)'), to = fparts(of[0], 'to');
+  const wto = (/to\{[^}]*-webkit-filter:brightness\(([\d.]+)\) contrast\(([\d.]+)\)/.exec(of[1] || '') || []).slice(1).map(Number);
+  t('it starts as no change at all',
+    !!from && [0, 40, 128, 255].every((v) => map(from, v) === v), from);
+  t("it ends taking YouTube's grey to black; white and red stay (-webkit- the same)",
+    !!to && map(to, 40) === 0 && map(to, 255) === 255 && map(to, 252) >= 248 && map(to, 13) === 0 && map(to, 27) === 0 &&
+      wto.length === 2 && wto[0] === to[0] && wto[1] === to[1],
+    [to, wto, [40, 255, 252, 13, 27].map((v) => map(to, v))]);
+
+  // F: OLED mode on a loader lighter than YouTube's grey: the filter would not
+  // take it to black, so it is grown as usual.
+  const g = boot({ oled: true, rule: LOADER_RULE.replace('#282828', '#3a3a3a') });
+  await sleep(100);
+  const gl = g.doc.getElementById('loader');
+  t('OLED mode, a lighter loader: grown, not marked',
+    gl.classList.contains('ytng-start-grown') && !gl.classList.contains('ytng-start-oled'),
+    [gl.className, [...gl.children].map((c) => c.className)]);
 
   console.log(pass + ' passed, ' + fail + ' failed (' + mode + ')');
   process.exit(fail ? 1 : 0);

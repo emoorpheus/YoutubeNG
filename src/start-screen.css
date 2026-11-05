@@ -2,9 +2,9 @@
    app's. Its logo (60vw wide, centred) goes onto a layer of its own at the
    same place, moves up and shrinks to 3/4, and NEXT-GEN comes in under it.
    Lengths in vw, as YouTube sizes the logo by the width. The logo is 444/1984
-   as high as wide. Transform and opacity only: the compositor runs them while
-   YouTube's start-up keeps the page busy. The -webkit- forms are for webOS 3
-   (Chrome 38). */
+   as high as wide. Transform and opacity only, and a filter in OLED mode: the
+   compositor runs them while YouTube's start-up keeps the page busy. The
+   -webkit- forms are for webOS 3 (Chrome 38). */
 #loader.ytng-start-grown {
   background-size: 0 0;
 }
@@ -45,6 +45,16 @@
   animation: ytng-start-name 0.4s cubic-bezier(0.2, 0, 0, 1) 0.15s both;
 }
 
+/* OLED mode (start-screen.js): the start-up screen turns black in step with
+   the logo's move. YouTube's logo PNG is opaque, on a #282828 of its own, so
+   the loader is filtered as one: x -> (x - 40/255) * 255/215 takes that grey
+   to black round the logo and in its box alike, white stays white and red
+   red. */
+#loader.ytng-start-oled {
+  -webkit-animation: ytng-start-oled 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+  animation: ytng-start-oled 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
 @-webkit-keyframes ytng-start-logo {
   from { -webkit-transform: none; transform: none; }
   to { -webkit-transform: translateY(-2.582vw) scale(0.75); transform: translateY(-2.582vw) scale(0.75); }
@@ -63,4 +73,14 @@
 @keyframes ytng-start-name {
   from { opacity: 0; transform: translateY(0.8vw); }
   to { opacity: 1; transform: none; }
+}
+
+@-webkit-keyframes ytng-start-oled {
+  from { -webkit-filter: brightness(1) contrast(1); filter: brightness(1) contrast(1); }
+  to { -webkit-filter: brightness(0.8644) contrast(1.3721); filter: brightness(0.8644) contrast(1.3721); }
+}
+
+@keyframes ytng-start-oled {
+  from { filter: brightness(1) contrast(1); }
+  to { filter: brightness(0.8644) contrast(1.3721); }
 }
