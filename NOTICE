@@ -15,8 +15,6 @@ from youtube-webos 0.8.5 beta 2 (see docs/upstream.md).
 Third-party code and assets
 - src/app_api/index.ts, src/lang-settings-fix.ts and parts of
   src/auto-login.js are adapted from TizenTube by reisxd (GPL-3.0).
-- src/spatial-navigation-polyfill.js: Copyright (c) 2018-2019 LG Electronics
-  Inc., MIT License (see the file header).
 - Emoji graphics are loaded at runtime from Twemoji (CC-BY 4.0).
 
 Online services used at runtime: SponsorBlock (sponsor.ajay.app) and

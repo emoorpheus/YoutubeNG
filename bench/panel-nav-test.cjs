@@ -19,7 +19,7 @@
  */
 const fs = require('fs');
 const { JSDOM, VirtualConsole } = require('jsdom');
-const { applyChrome38Downgrade, UA, setUserAgent } = require('./chrome38-env.cjs');
+const { applyChrome38Downgrade, sealDomCollectionPrototypes, UA, setUserAgent } = require('./chrome38-env.cjs');
 
 const bundlePath = process.argv[2] || 'dist/webOSUserScripts/userScript.js';
 const modern = process.argv[3] === 'modern';
@@ -41,11 +41,11 @@ function layout(doc) {
   const panel = doc.querySelector('.ytng-ui-container');
   if (!panel || panel.style.display === 'none') return geo;
   geo.set(panel, rect(140, 60, 1012, VIEW_H - 20));
-  panel.querySelectorAll('.ytng-tab-btn').forEach((b, i) => {
+  Array.from(panel.querySelectorAll('.ytng-tab-btn')).forEach((b, i) => {
     geo.set(b, rect(TAB_X[i][0], TAB_TOP, TAB_X[i][1], TAB_BOTTOM));
   });
   let page = null;
-  panel.querySelectorAll('.ytng-settings-page').forEach((p) => { if (p.style.display !== 'none') page = p; });
+  Array.from(panel.querySelectorAll('.ytng-settings-page')).forEach((p) => { if (p.style.display !== 'none') page = p; });
   if (!page) return geo;
 
   let y = PAGE_TOP + 8;
@@ -133,7 +133,12 @@ function boot() {
     dearrowCrowdTitles: true, dearrowCrowdThumbnails: true,
     enableReturnYouTubeDislike: false, upgradeThumbnails: false, enableAutoLogin: false
   }));
-  if (!modern) applyChrome38Downgrade(win);
+  if (!modern) {
+    applyChrome38Downgrade(win);
+    // Worst case on a webOS 3 TV: polyfills.js cannot make DOM collections
+    // iterable. The panel's arrow keys must not need them to be.
+    sealDomCollectionPrototypes(win);
+  }
   win.eval(fs.readFileSync(bundlePath, 'utf8'));
   return { win, doc, errors, pump: () => { const q = rafQ; rafQ = []; for (const cb of q) cb(Date.now()); } };
 }

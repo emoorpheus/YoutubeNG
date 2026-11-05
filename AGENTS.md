@@ -18,7 +18,7 @@ YouTube Next-Gen (NG, short for new-gen): a YouTube app for LG webOS TVs, a fork
 | `src/i18n/` | translations: `index.js` (engine + language list), `ru.js`, `template.js` (all English text) |
 | `src/playback-speed.js`, `src/speed/`, `src/speed-cap.js` | playback speed (WebCodecs, webOS 23+); `src/speed/` is vendor code |
 | `src/adblock.js`, `src/sponsorblock*.js`, `src/return-dislike.js`, `src/video-quality.js`, ... | features, one file each |
-| `src/polyfills.js`, `src/spatial-navigation-polyfill.js` | what webOS 3 (Chrome 38) lacks; legacy build only |
+| `src/polyfills.js` | what webOS 3 (Chrome 38) lacks; legacy build only |
 | `assets/` | `appinfo.json`, icons, splash (generated, see Icons) |
 | `design/icons/generate.py` | draws icon variants A–J and all shipped images |
 | `tools/` | `package-all.cjs`, `i18n.cjs`, `ares-app.js`, `sync-version.cjs` |

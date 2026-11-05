@@ -1,4 +1,3 @@
-import './spatial-navigation-polyfill.js';
 import { clockModes, dearrowThumbnailFallbacks, dearrowTitleFormats, logoStyles, pauseScreensaverDelays, thumbnailQualityModes, videoCodecModes } from './config.js';
 import { titleFormattingSupported } from './dearrow/index.js';
 import { configAddChangeListener, configRemoveChangeListener, configRead, configWrite, configGetDesc, segmentTypes, configGetDefault, shortcutActions, sbModes, sbModesHighlight, forcePreviewModes } from './config.js';
@@ -152,30 +151,6 @@ const isEngagementPanelVisible = () => {
     return !!(panel && window.getComputedStyle(panel).display !== 'none');
 };
 
-// Both of these are best-effort. window.__spatialNavigation__ comes from our
-// own polyfill, but that polyfill bails out entirely if the platform ever ships
-// a native window.navigate, and it seals its API object - so an assignment to a
-// property that isn't there throws "object is not extensible" and takes the
-// whole bundle down with it. Feature-check instead of assuming; the worst case
-// is that we lose an optimisation, not the app.
-function setSpatialNav(prop, value) {
-  const sn = window.__spatialNavigation__;
-  if (!sn || !(prop in sn)) return false;
-  try {
-    sn[prop] = value;
-    return true;
-  } catch (err) {
-    console.warn(`[UI] could not set __spatialNavigation__.${prop}:`, err);
-    return false;
-  }
-}
-
-setSpatialNav('keyMode', 'NONE');
-// Nothing calls navigate(): the options panel moves its own focus (see
-// nearestInDirection below). Left on, the polyfill's global focusin listener
-// forces a synchronous layout on every focus change in the whole YouTube app -
-// one per remote keypress - to maintain a search origin only navigate() reads.
-setSpatialNav('trackFocus', false);
 const ARROW_KEY_CODE = { 
   [REMOTE_KEYS.LEFT.code]: 'left', 
   [REMOTE_KEYS.UP.code]: 'up', 

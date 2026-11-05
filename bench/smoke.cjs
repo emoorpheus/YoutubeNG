@@ -75,7 +75,6 @@ const done = () => {
        'style tags: ' + win.document.querySelectorAll('style').length);
   push('Element#matches polyfilled', typeof win.Element.prototype.matches === 'function');
   push('Node#isConnected polyfilled', 'isConnected' in win.Node.prototype);
-  push('spatial navigation installed', !!win.__spatialNavigation__);
 
   // Exercise the hooked JSON.parse with a realistic YouTube payload.
   let parseOk = true, parseErr = '';
