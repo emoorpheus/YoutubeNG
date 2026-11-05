@@ -37,16 +37,15 @@ npm run i18n:template    # rewrite src/i18n/template.js after UI text changes
 npm run lint
 ```
 
-Bench (jsdom is not a dependency, install it without saving):
+Bench (jsdom is a devDependency):
 
 ```sh
-npm i --no-save jsdom
 bash bench/run-all.sh mylabel   # builds legacy + modern and runs the suite
 node bench/speed-cap-test.cjs dist/webOSUserScripts/userScript.js
 node bench/startup-bench.cjs old.js new.js legacy 100   # startup A/B, see docs/perf.md
 ```
 
-Known failures in `run-all.sh`, present before this fork: dependency telemetry (1), dislike timing (2), module behaviour (3). `bench/speed-test.cjs` and `bench/settings-speed-test.cjs` target an older speed implementation and are not in the suite.
+`run-all.sh` passes in full: it ends with `all passed`. `bench/speed-test.cjs` and `bench/settings-speed-test.cjs` target an older speed implementation and are not in the suite.
 
 Do not run `npm run type-check` (`tsc -b`); it is not part of the build. Do not edit `node_modules/` or `dist/`.
 
