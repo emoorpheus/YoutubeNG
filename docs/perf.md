@@ -18,6 +18,7 @@ Keep the old bundles before a change: `cp dist/webOSUserScripts/userScript.js /t
 | No spatial-navigation polyfill | 361,598 B (107,385) / 306,830 B (92,002): −4.8 % / −5.2 % | webOS 3: compile −0.54 ms (97), run −0.30 ms (87); webOS 22+: compile −0.46 ms (98), run −0.30 ms (88) | yes |
 | One `<style>` for every stylesheet (b2) | 354,292 B (105,855) / 299,716 B (90,475): −2.0 % / −2.3 % | webOS 3: compile −0.27 ms (80), run −2.32 ms (92); webOS 22+: compile −0.42 ms (93), run −2.42 ms (94) | yes |
 | terser `passes: 2` (b2) | not tried: ours is 4, and b2 measured passes past two at some 50 bytes | | |
+| terser `reduce_funcs: false` (b2: a single-use helper inlined into a loop became a closure per item on Chromium 38) | 355,156 B (105,881) / 300,331 B (90,924): +864 B / +615 B | response hook, webOS 3 build, 150 KB browse, 3 runs each: overhead 1.52 → 1.50 ms; `node --jitless`, 2 runs each: 3.12 → 3.08 ms (−1.4 %, inside the spread) | no; node is not Chromium 38, worth a try on a webOS 3 TV |
 
 From the `<style>` row on, `run` also counts the microtasks the top level queued: the one `<style>` is written in one.
 
