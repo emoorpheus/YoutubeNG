@@ -2,6 +2,10 @@
 
 Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-release01, pre-release02 and so on. webOS takes numbers only, so on the TV each of them is 1.0.0; the settings heading and the file names carry the full name.
 
+## Unreleased
+
+- Docs: `docs/ROADMAP.md`, what is left to do: the TV check of pre-release07, TV checks never finished in earlier runs, release and repository chores.
+
 ## 1.0.0 pre-release07
 
 Optimisation, security and memory work while the TV was busy; not yet checked on a TV.
