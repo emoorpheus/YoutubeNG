@@ -117,6 +117,7 @@ class SponsorBlockHandler {
         this._lastSyncSig = null;
 
         this._observedRoot = null;
+        this._finderObserver = null;
         this._barRetryTimer = null;
 
         // Cached _getProgressBarAnchor() result, keyed on progressBar identity.
@@ -704,6 +705,11 @@ class SponsorBlockHandler {
             this.observers.delete(this._attrObserver);
             this._attrObserver = null;
         }
+        if (this._finderObserver) {
+            this._finderObserver.disconnect();
+            this.observers.delete(this._finderObserver);
+            this._finderObserver = null;
+        }
 
         const OPTIMAL_SELECTOR = 'ytlr-progress-bar';
 
@@ -745,18 +751,26 @@ class SponsorBlockHandler {
         } else {
             const root = document.querySelector('ytlr-app') || document.body;
             this.log('info', 'Waiting for optimized container:', OPTIMAL_SELECTOR);
+            // One finder at a time: with its root on the page,
+            // _ensureObserverAlive has nothing to re-attach. Each lookup while
+            // the bar was missing (every 250 ms for 10 s) used to add another,
+            // every one woken by every change in the app, and each left an
+            // observer of its own on the bar's container once the bar came.
+            this._observedRoot = root;
 
             const finderObserver = new MutationObserver((mutations, obs) => {
                 const found = document.querySelector(OPTIMAL_SELECTOR);
                 if (found) {
                     obs.disconnect();
                     this.observers.delete(obs);
+                    this._finderObserver = null;
                     startOptimizedObserver(found);
                 }
             });
 
             finderObserver.observe(root, { childList: true, subtree: true });
             this.observers.add(finderObserver);
+            this._finderObserver = finderObserver;
         }
     }
 
@@ -1476,6 +1490,7 @@ class SponsorBlockHandler {
             this._barRetryTimer = null;
         }
         this._observedRoot = null;
+        this._finderObserver = null;
         this._videoWait = null;
 
         sponsorBlockUI.togglePopup(false);

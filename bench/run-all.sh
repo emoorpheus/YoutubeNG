@@ -31,6 +31,7 @@ echo "--- start-up screen (webOS 23+) ---"; node bench/start-screen-test.cjs dis
 echo "--- memory: 70 visits, nothing piles up (webOS 22+ build) ---"; node bench/leak-soak-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- stylesheets: none comes and goes per video (webOS 22+ build) ---"; node bench/stylesheet-churn-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- comments fix: retries skip unchanged stylesheets (webOS 22+ build) ---"; node bench/comments-fix-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
+echo "--- SponsorBlock: one observer while the progress bar is missing (webOS 22+ build) ---"; node bench/sponsorblock-bar-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 3 build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
@@ -51,6 +52,7 @@ echo "--- Google Fonts only on webOS 4 and older ---"; node bench/google-fonts-t
 echo "--- memory: 70 visits, nothing piles up (webOS 3 build) ---"; node bench/leak-soak-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- stylesheets: none comes and goes per video (webOS 3 build) ---"; node bench/stylesheet-churn-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- comments fix: retries skip unchanged stylesheets (webOS 3 build) ---"; node bench/comments-fix-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
+echo "--- SponsorBlock: one observer while the progress bar is missing (webOS 3 build) ---"; node bench/sponsorblock-bar-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- JSON hook perf (webOS 3) ---"; node bench/hook-bench.cjs dist/webOSUserScripts/userScript.js legacy "$LABEL" 2>&1 | grep -v "^JSON:"
 echo "--- perf_mon build (--env perf) ---"
 npx webpack --mode=production --env perf > /tmp/perf.log 2>&1
