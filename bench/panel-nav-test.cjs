@@ -51,11 +51,13 @@ function layout(doc) {
   let y = PAGE_TOP + 8;
   const row = (el, l, r) => {
     geo.set(el, rect(l, y, r, y + ROW_H));
+    // A checkbox row's box, or the invisible one an aligned cycle row keeps at
+    // the same spot to line its label up with the checkbox rows.
+    const input = el.querySelector('input[type="checkbox"]');
+    if (input) geo.set(input, rect(l + 12, y + 12, l + 32, y + 32));
     if (el.tagName !== 'LABEL') return;
     const content = el.querySelector('.label-content');
     if (content) geo.set(content, rect(l, y, r, y + ROW_H));
-    const input = el.querySelector('input');
-    if (input) geo.set(input, rect(l + 12, y + 12, l + 32, y + 32));
   };
   const isRow = (el) => el.tagName === 'LABEL' || el.classList.contains('shortcut-control-row');
   const walk = (container) => {
@@ -248,6 +250,9 @@ setTimeout(() => {
   move('Down from the DeArrow tab: the DeArrow checkbox, not the first cycle row', tabs[2], KEY.DOWN, daEnable);
   move('Down from the DeArrow checkbox: the badge checkbox below it', daEnable, KEY.DOWN, daBadge);
   move('Up from the DeArrow checkbox: the DeArrow tab', daEnable, KEY.UP, tabs[2]);
+  // The page's last control is a cycle row that keeps an invisible checkbox box
+  // to line its label up with the checkbox rows: Up wraps to the row itself.
+  move('Up from the DeArrow tab wraps to the page\'s last row, not to its hidden alignment box', tabs[2], KEY.UP, cycleRow('dearrow', /crowdsourced thumbnail/i));
 
   // ---- Shortcuts and UI Tweaks: rows only, or a mix ----
   tabs[3].focus();

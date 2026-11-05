@@ -393,7 +393,11 @@ function createAlignedCycleControl(configKey, displayMap) {
     label.style.alignItems = 'center';
 	label.style.lineHeight = 'inherit';
     
+    // Only there to line the label up; invisible, so it cannot take focus, and
+    // out of the focus order so the arrow keys never aim at it (the Up wrap
+    // onto the DeArrow page's last row went nowhere).
     const dummyBox = createElement('input', {
+      tabIndex: -1,
       style: {
         visibility: 'hidden',
         paddingLeft: '2.2vh'
