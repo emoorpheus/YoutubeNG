@@ -159,6 +159,9 @@ export function attachElementShim(el, timeMap, { onRateRequest }) {
   return { detach, isAttached: () => !detached };
 }
 
+// MediaSource URLs remembered for the `src` setter: the newest ones.
+const URL_MAP_LIMIT = 8;
+
 export function installMseHook(
   win,
   { getSpeed, createAudioSink, onRateRequest, onError, onNativeAudio }
@@ -194,6 +197,10 @@ export function installMseHook(
     const url = origCreateObjectURL.call(this, obj);
     if (obj instanceof win.MediaSource) {
       urlToMs.set(url, obj);
+      // Needed only until the URL is given to the <video>, moments later. A
+      // player that never revokes its URLs must not keep every MediaSource of
+      // the session (and its audio engine) alive here: the oldest go.
+      if (urlToMs.size > URL_MAP_LIMIT) urlToMs.delete(urlToMs.keys().next().value);
     }
     return url;
   };

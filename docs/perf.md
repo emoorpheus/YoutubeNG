@@ -31,6 +31,10 @@ Response hook rows marked *default settings*: `hook-bench.cjs` wrote its setting
 
 Not seen in jsdom: on webOS 22+ the polyfill also read the root element's computed style three times and registered three CSS properties at document start.
 
+## Memory
+
+`node bench/leak-soak-test.cjs dist/webOSUserScripts/userScript.js legacy` (or `modern`) visits 70 videos and Home in turn, each Home with 12 tiles never seen before and every fifth with the options panel opened and closed, and fails if listeners, intervals, MutationObservers, pending frames or DOM nodes grow after the first 10 visits; `bench/run-all.sh` runs it on both builds. Over 600 visits (7,200 tiles) the heap grew 3.4 MB on the webOS 3 build and 3.1 MB on the webOS 22+ one, jsdom's own share 1.1 MB, and stopped growing once the caches were full. Each has a limit: thumbnails checked 4,000 per session, qualities known 1,200, thumbnails waiting for their check 1,500, DeArrow's videos 1,000 (its copies 48 MB of blobs, 4 MB of data URLs), emoji texts 500, dislike counts 50, MediaSource URLs 8.
+
 ## On a TV
 
 A webOS 25 TV (2025), the webOS 22+ ipk of `daa6a5c` against that of `c07dab8`. Each build reloaded six times under a DevTools trace; the injected `userScript.js` is the longest `EvaluateScript` without a URL.

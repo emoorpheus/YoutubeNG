@@ -28,6 +28,7 @@ echo "--- options panel arrow keys (webOS 22+ build) ---"; node bench/panel-nav-
 echo "--- Who's watching? bypass (webOS 23+) ---"; node bench/auto-login-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- SponsorBlock skip watchdog (webOS 23+) ---"; node bench/sponsorblock-skip-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 echo "--- start-up screen (webOS 23+) ---"; node bench/start-screen-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
+echo "--- memory: 70 visits, nothing piles up (webOS 22+ build) ---"; node bench/leak-soak-test.cjs dist/webOSUserScripts/userScript.js modern 2>&1 | tail -1
 npx webpack --mode=production > /dev/null 2>&1   # back to legacy for the rest
 echo "--- new features (logo/live/guide/panel) ---"; node bench/new-features-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- DeArrow (webOS 3 build) ---"; node bench/dearrow-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
@@ -45,6 +46,7 @@ echo "--- start-up screen (webOS 3) ---"; node bench/start-screen-test.cjs dist/
 echo "--- emoji observer convergence ---"; node bench/emoji-loop-test.cjs dist/webOSUserScripts/userScript.js 40 2>&1 | tail -1
 echo "--- emoji amplification ---";        node bench/emoji-amplify-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
 echo "--- Google Fonts only on webOS 4 and older ---"; node bench/google-fonts-test.cjs dist/webOSUserScripts/userScript.js 2>&1 | tail -1
+echo "--- memory: 70 visits, nothing piles up (webOS 3 build) ---"; node bench/leak-soak-test.cjs dist/webOSUserScripts/userScript.js legacy 2>&1 | tail -1
 echo "--- JSON hook perf (webOS 3) ---"; node bench/hook-bench.cjs dist/webOSUserScripts/userScript.js legacy "$LABEL" 2>&1 | grep -v "^JSON:"
 echo "--- perf_mon build (--env perf) ---"
 npx webpack --mode=production --env perf > /tmp/perf.log 2>&1

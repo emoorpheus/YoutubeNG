@@ -74,6 +74,34 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
     t('an init split across appends is still reported', errors.length === 1 && /split/.test(errors[0]) && sb.appended.length === 2, errors);
   }
 
+  // ------------------------------------- MediaSources are not kept for ever
+  // The URL -> MediaSource map is needed only until the URL is given to the
+  // <video>. A player that never revokes its URLs must not keep every
+  // MediaSource of the session alive through it, with its audio engine.
+  {
+    require('v8').setFlagsFromString('--expose-gc');
+    const gc = require('vm').runInNewContext('gc');
+    let made = 0;
+    class MS {}
+    MS.prototype.addSourceBuffer = function () { return {}; };
+    function Media() {}
+    Object.defineProperty(Media.prototype, 'src', { configurable: true, get() { return this._src; }, set(v) { this._src = v; } });
+    const w = { MediaSource: MS, URL: { createObjectURL: () => 'blob:' + ++made, revokeObjectURL() {} }, HTMLMediaElement: Media, EventTarget, Event };
+    installMseHook(w, { getSpeed: () => 1, createAudioSink: () => null, onRateRequest() {}, onError() {}, onNativeAudio() {} });
+    const video = new Media();
+    const refs = [];
+    for (let i = 0; i < 50; i++) {
+      const ms = new MS();
+      refs.push(new WeakRef(ms));
+      video.src = w.URL.createObjectURL(ms); // one video after another, no revoke
+    }
+    video.src = '';
+    await tick();
+    gc(); gc();
+    const alive = refs.filter((r) => r.deref()).length;
+    t('50 videos, no revokeObjectURL: at most 8 MediaSources still alive', alive <= 8, { alive });
+  }
+
   // ------------------------------------------------------------- audio engine
   const doc = { hidden: false, listeners: [], addEventListener(type, fn) { this.listeners.push(fn); }, removeEventListener(type, fn) { this.listeners = this.listeners.filter((f) => f !== fn); } };
   const setHidden = (h) => { doc.hidden = h; doc.listeners.forEach((fn) => fn()); };
