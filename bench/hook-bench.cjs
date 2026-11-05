@@ -35,10 +35,9 @@ if (legacy) applyChrome38Downgrade(win);
 const nativeParse = win.JSON.parse;
 const nativeStringify = win.JSON.stringify;
 
-win.eval(fs.readFileSync(bundlePath, 'utf8'));
-
 // Turn on every filter so the hook does its maximum work (the worst case a
-// user can actually configure).
+// user can actually configure). Before the bundle loads: it reads its settings
+// once, at load.
 const cfg = JSON.parse(win.localStorage.getItem('ytng-configuration') || '{}');
 Object.assign(cfg, {
   enableAdBlock: true, enableTrackingBlock: true, removeGlobalShorts: true,
@@ -47,10 +46,15 @@ Object.assign(cfg, {
 });
 win.localStorage.setItem('ytng-configuration', JSON.stringify(cfg));
 
+win.eval(fs.readFileSync(bundlePath, 'utf8'));
+
 setTimeout(() => {
   const hookedParse = win.JSON.parse;
   const hookedStringify = win.JSON.stringify;
   if (hookedParse === nativeParse) { console.log('WARNING: JSON.parse not hooked'); }
+  if (nativeStringify(hookedParse(nativeStringify(makeBrowse()))).indexOf('"trackingParams":""') < 0) {
+    console.log('WARNING: Tracking Block is off: the settings did not reach the bundle');
+  }
 
   const browseText = nativeStringify(makeBrowse());
   const playerText = nativeStringify(makePlayer());
