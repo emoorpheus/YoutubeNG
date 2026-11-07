@@ -4,7 +4,20 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 
 ## Unreleased
 
-- Docs: `docs/ROADMAP.md`, what is left to do: the TV check of pre-release07, TV checks never finished in earlier runs, release and repository chores.
+- Repository chores and test-plan backlog (see `docs/ROADMAP.md`).
+
+## 1.1.0
+
+First major feature release of YouTube Next-Gen, verified on LG OLED TV (webOS 24). Consolidates all pre-release07 optimisations, security hardening, and performance improvements:
+
+- Start-up screen in OLED mode: smooth filter animation (brightness/contrast) transitioning grey into true black synchronized with the logo movement over 0.45 s.
+- Links from other apps and casts: security whitelist accepting only `/tv` paths; non-watch links safely redirect to the TV home page.
+- Google Fonts conditional loading: fonts for Arabic and mathematical symbols are requested only on webOS 4 and older; modern webOS versions eliminate external font network requests completely.
+- Memory leak prevention: MediaSource URL map capped at 8 to prevent memory growth across long playback sessions at custom speeds.
+- Return YouTube Dislike styling: rules moved into the main stylesheet, eliminating `<style>` tag churn and page restyles upon video navigation.
+- Comments fix: stylesheets caching skips unchanged sheets during start-up checks, eliminating redundant selector scans and fallback rewrites.
+- SponsorBlock: optimized progress bar lookup, reducing MutationObservers from 82 to 1 while awaiting the progress bar container.
+- Verification: all 264 polyfill tests, 14 speed engine tests, 83 DeArrow tests, memory soak (70 visits), and OLED suite passing. Full verification on TV completed: clean console, accurate SponsorBlock segments, and zero stylesheet churn confirmed.
 
 ## 1.0.0 pre-release07
 

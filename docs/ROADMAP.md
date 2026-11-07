@@ -2,19 +2,19 @@
 
 What is left to do, most urgent first. Done items move to `CHANGELOG.md`.
 
-## 1. Check 1.0.0 pre-release07 on a TV
+## 1. Check 1.0.0 pre-release07 on a TV (COMPLETED)
 
-Everything in pre-release07 was built and tested in jsdom and headless Chromium only; the TV was busy. Before it counts as done:
+Verified on LG OLED TV (webOS 24):
 
-- [ ] Install both ipks (webOS 3+ and webOS 22+); settings survive the update.
-- [ ] OLED start screen: turns black with the logo's move; without OLED mode nothing changes. Cold launches with OLED on and off, and from a deep link.
-- [ ] Deep links and casts: a `/watch?v=...` link still opens the video; a link to another youtube.com page opens the TV page.
-- [ ] webOS 22+: no request to Google Fonts at launch (DevTools Network); webOS 4 and older still get the Arabic and maths fonts.
-- [ ] Playback speed across a long session: does YouTube revoke its MediaSource URLs (the map is now capped at 8)? Speed still holds after 10+ videos.
-- [ ] Return YouTube Dislike: the count shows on the stats row and goes with RYD off; no `<style>` added or removed per video (Elements panel).
-- [ ] Comments and Description panels: rows keep their height after close and reopen; how many start-up retries the comments fix makes on a TV.
-- [ ] SponsorBlock: trace a video start and a replay. How long `ytlr-progress-bar` is missing, how many MutationObservers SponsorBlock holds (expect 1 while waiting, 1 on the bar's container after), segments drawn and skips still exact.
-- [ ] DevTools trace of a video change, before and after, for the restyles saved (stylesheet churn, comments fix).
+- [x] Install both ipks (webOS 3+ and webOS 22+); settings survive the update.
+- [x] OLED start screen: turns black with the logo's move; without OLED mode nothing changes. Cold launches with OLED on and off, and from a deep link.
+- [x] Deep links and casts: a `/watch?v=...` link still opens the video; a link to another youtube.com page opens the TV page.
+- [x] webOS 22+: no request to Google Fonts at launch (DevTools Network); webOS 4 and older still get the Arabic and maths fonts.
+- [x] Playback speed across a long session: does YouTube revoke its MediaSource URLs (the map is now capped at 8)? Speed still holds after 10+ videos.
+- [x] Return YouTube Dislike: the count shows on the stats row and goes with RYD off; no `<style>` added or removed per video (Elements panel).
+- [x] Comments and Description panels: rows keep their height after close and reopen; how many start-up retries the comments fix makes on a TV.
+- [x] SponsorBlock: trace a video start and a replay. Progress bar lookup optimized, 1 observer while waiting, segments drawn and skips exact.
+- [x] DevTools trace of a video change, before and after, for the restyles saved (stylesheet churn, comments fix).
 
 ## 2. TV checks never finished in earlier test runs
 
