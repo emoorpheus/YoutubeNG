@@ -19,6 +19,19 @@ First major feature release of YouTube Next-Gen, verified on LG OLED TV (webOS 2
 - SponsorBlock: optimized progress bar lookup, reducing MutationObservers from 82 to 1 while awaiting the progress bar container.
 - Verification: all 264 polyfill tests, 14 speed engine tests, 83 DeArrow tests, memory soak (70 visits), and OLED suite passing. Full verification on TV completed: clean console, accurate SponsorBlock segments, and zero stylesheet churn confirmed.
 
+### Русский
+
+Первый полноценный функциональный релиз YouTube Next-Gen, проверенный на LG OLED TV (webOS 24). Объединяет все оптимизации, доработки безопасности и производительности:
+
+- **Стартовый экран в OLED-режиме:** плавная фильтр-анимация (яркость/контрастность) перехода серого фона в истинный черный цвет синхронно со сдвигом логотипа за 0.45 с.
+- **Ссылки из других приложений и трансляции (DIAL):** строгий белый список путей, принимающий только `/tv`; ссылки не на видео безопасно открывают главную страницу ТВ.
+- **Условная загрузка Google Fonts:** шрифты для арабского языка и математических символов запрашиваются только на webOS 4 и старше; на современных webOS внешние сетевые запросы шрифтов полностью исключены.
+- **Защита от утечек памяти:** карта MediaSource ограничена 8 последними URL для предотвращения накопления памяти при длительном просмотре с измененной скоростью.
+- **Стили Return YouTube Dislike:** правила перенесены в основной бандл стилей, что устранило создание и удаление тегов `<style>` при каждом переключении роликов.
+- **Comments fix:** кэширование стилей пропускает неизменившиеся таблицы при проверках запуска, избавляя от повторного чтения селекторов и перезаписи фоллбэк-стилей.
+- **SponsorBlock:** оптимизирован поиск шкалы времени, количество MutationObserver сокращено с 82 до 1 во время ожидания контейнера.
+- **Верификация:** успешно пройдены все 264 теста полифилов, 14 тестов движка скорости, 83 теста DeArrow, стресс-тест памяти (70 переходов) и OLED-набор. Полное тестирование на ТВ подтвердило чистую консоль, корректную отрисовку сегментов SponsorBlock и отсутствие churn стилей.
+
 ## 1.0.0 pre-release07
 
 Optimisation, security and memory work while the TV was busy; not yet checked on a TV.
