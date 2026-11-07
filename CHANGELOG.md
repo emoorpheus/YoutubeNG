@@ -6,7 +6,7 @@ Until the first GitHub release, 1.0.0, test builds are numbered 1.0.0 pre-releas
 
 - Repository chores and test-plan backlog (see `docs/ROADMAP.md`).
 
-## 1.1.0
+## 1.0.0
 
 First major feature release of YouTube Next-Gen, verified on LG OLED TV (webOS 24). Consolidates all pre-release07 optimisations, security hardening, and performance improvements:
 
